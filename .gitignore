@@ -17,8 +17,9 @@
 *.zip
 *.tar.gz
 *.rar
-*.iml
 
+*.iml
+target/
 .idea/
 
 !.gitignore
