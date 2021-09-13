@@ -17,6 +17,9 @@
 *.zip
 *.tar.gz
 *.rar
+*.iml
+
+.idea/
 
 !.gitignore
 !DiamanteInvestments.jar
