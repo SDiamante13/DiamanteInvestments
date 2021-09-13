@@ -1,4 +1,3 @@
-import java.awt.Dialog.ModalExclusionType;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -48,7 +47,7 @@ public class LoginWindow {
 	 */
 	public LoginWindow() {
 		initialize();
-		connection = sqliteConnection.dbConnecter();
+		connection = DBConnection.dbConnecter();
 	}
 
 	/**

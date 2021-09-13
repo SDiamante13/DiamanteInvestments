@@ -245,7 +245,7 @@ import org.jsoup.Jsoup;
 			
 			//------------------------------------------
 			// Find today's volume
-			ele = doc.select("div.range__details");
+			ele = doc.select("div.range__header");
 			line = ele.toString();
 			target = line.indexOf("Volume");
 			deci = line.indexOf(".", target);
@@ -315,9 +315,11 @@ input.close();
 
 //TO DO grab icon off of Nasdaq
 
-Document doc2 = Jsoup.connect("https://www.nasdaq.com/symbol/" + symbol).get();
-Elements image = doc2.select("div#logo-wrap img[src]");
-String urlIcon = image.attr("src");
+//Document doc2 = Jsoup.connect("https://www.nasdaq.com/market-activity/stocks/" + symbol).get();
+//Elements image = doc2.select("div#logo-wrap img[src]");
+//String urlIcon = image.attr("src");
+String urlIcon = "";
+
 if(urlIcon.isEmpty()) {
 	iconUrl = new URL("https://www.google.com/webhp");
 	return;

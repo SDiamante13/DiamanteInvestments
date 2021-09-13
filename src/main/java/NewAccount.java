@@ -1,4 +1,3 @@
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -9,9 +8,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.Image;
-import java.awt.Window;
 
 import javax.swing.JTextField;
 import javax.swing.ImageIcon;
@@ -61,7 +58,7 @@ public class NewAccount {
 		newAccountFrame.setBounds(100, 100, 424, 329);
 		newAccountFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		newAccountFrame.getContentPane().setLayout(null);
-		connection = sqliteConnection.dbConnecter();
+		connection = DBConnection.dbConnecter();
 		newAccountFrame.setBounds(100, 100, 524, 413);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -162,7 +159,7 @@ public class NewAccount {
 					Statement stmt = connection.createStatement();
 					// Create unique User Watchlist table
 					String tableName = txtUsername.getText() + "WatchList";
-					String create = "CREATE TABLE IF NOT EXISTS " + tableName + "(symbol text PRIMARY KEY UNIQUE)";
+					String create = "CREATE TABLE IF NOT EXISTS " + tableName + "(symbol varchar(10) PRIMARY KEY UNIQUE)";
 					stmt.execute(create);
 					
 					JOptionPane.showMessageDialog(null, "New User Created!");

@@ -59,17 +59,9 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
-import javax.swing.JRadioButton;
-import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JSeparator;
-import javax.swing.BoxLayout;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import java.awt.FlowLayout;
-import javax.swing.JTextArea;
 import java.awt.GridLayout;
 import javax.swing.border.LineBorder;
 
@@ -154,7 +146,7 @@ public class StockForm extends JFrame implements ChartMouseListener{
 	public StockForm(String username) {
 		super();
 		usernameTable = username;
-		connection = sqliteConnection.dbConnecter();
+		connection = DBConnection.dbConnecter();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
 	    this.setExtendedState(this.getExtendedState() | this.MAXIMIZED_BOTH);
