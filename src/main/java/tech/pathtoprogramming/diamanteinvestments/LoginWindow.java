@@ -1,7 +1,5 @@
 package tech.pathtoprogramming.diamanteinvestments;
 
-import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -18,28 +16,6 @@ public class LoginWindow extends JFrame {
 
 	private JTextField txtUsername;
 	private JPasswordField txtPassword;
-	
-	
-	/**
-	 * Launch the application.
-	 * This is the login screen for the Stock Portfolio system
-	 * Each user will have their own personalized watchlist
-	 * Users that do not have access can easily create a new account
-	 */
-	
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					JFrame window = new LoginWindow();
-					window.setVisible(true);
-					window.setTitle("Diamante Investments - Login Page");
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
 	
 	Connection connection = null;
 
