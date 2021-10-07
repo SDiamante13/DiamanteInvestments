@@ -51,19 +51,24 @@ public class LoginWindow extends JFrame {
 		this.getContentPane().add(lblPassword);
 		
 		txtUsername = new JTextField();
+		txtUsername.setName("txtUsername");
 		txtUsername.setBounds(145, 103, 96, 23);
 		this.getContentPane().add(txtUsername);
 		txtUsername.setColumns(10);
 		
 		txtPassword = new JPasswordField();
+		txtPassword.setName("txtPassword");
 		txtPassword.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		txtPassword.setBounds(145, 143, 96, 23);
 		this.getContentPane().add(txtPassword);
 		
 		JButton btnLogin = new JButton("Login");
+		btnLogin.setName("btnLogin");
 		btnLogin.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				try {
+					System.out.println("Button clicked");
 					String query = "select * from PortfolioLogins where username=? and password=?";
 					PreparedStatement pst = connection.prepareStatement(query);
 					pst.setString(1, txtUsername.getText());
@@ -80,7 +85,7 @@ public class LoginWindow extends JFrame {
 						StockForm stockWindow = new StockForm(txtUsername.getText().trim());
 						stockWindow.setVisible(true);
 						stockWindow.setTitle("Diamante Investments - Stock Portfolio");
-						
+						stockWindow.setName("stockWindow");
 					}
 					else if(count > 1) {
 						JOptionPane.showMessageDialog(null, "Duplicate username and password");

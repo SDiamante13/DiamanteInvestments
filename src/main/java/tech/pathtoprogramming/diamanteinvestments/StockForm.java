@@ -117,24 +117,6 @@ public class StockForm extends JFrame implements ChartMouseListener{
 	JLabel lblDayMovingSt = new JLabel("100 Day");
 	JLabel lblStockPic = new JLabel("");
 	
-	
-	
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					StockForm frame = new StockForm();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-	
 	Connection connection = null;
 
 	/**

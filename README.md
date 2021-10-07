@@ -27,3 +27,9 @@ Enter creds: `mysql -usa -ppassword`
 Use database: `use stock_portfolio;`
 
 Show tables: `SHOW TABLES;`
+
+## AssertJ Swing
+
+The unit tests use AssertJ Swing to interact with the GUI and assert behavior.
+
+Reference: https://joel-costigliola.github.io/assertj/assertj-swing.html
