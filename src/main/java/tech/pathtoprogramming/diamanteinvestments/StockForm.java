@@ -1,3 +1,5 @@
+package tech.pathtoprogramming.diamanteinvestments;
+
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -549,7 +551,7 @@ public class StockForm extends JFrame implements ChartMouseListener{
 		}
 	}
 	
-	// This method will call StockSymbol and load values to the WatchList table
+	// This method will call tech.pathtoprogramming.diamanteinvestments.StockSymbol and load values to the WatchList table
 	public void retrieveStockStats(String stockS) {
 		StockSymbol tableSymbol = new StockSymbol(stockS);
 		Object[] row = {symbolList.get(0), tableSymbol.getPrice(), tableSymbol.getChange(), tableSymbol.getChangePercent()};

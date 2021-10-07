@@ -1,3 +1,5 @@
+package tech.pathtoprogramming.diamanteinvestments;
+
 import java.sql.*;
 import javax.swing.*;
 

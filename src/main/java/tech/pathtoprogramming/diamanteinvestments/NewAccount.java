@@ -1,3 +1,5 @@
+package tech.pathtoprogramming.diamanteinvestments;
+
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;

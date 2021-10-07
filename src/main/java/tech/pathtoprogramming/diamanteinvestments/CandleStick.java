@@ -1,3 +1,5 @@
+package tech.pathtoprogramming.diamanteinvestments;
+
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -36,17 +38,12 @@ import java.awt.GridLayout;
 import java.awt.geom.Rectangle2D;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Enumeration;
 
 import javax.swing.JRadioButton;
-import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
-import javax.swing.ButtonModel;
 import javax.swing.JButton;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.ActionEvent;
 
 public class CandleStick extends JFrame implements ChartMouseListener{
 
@@ -233,13 +230,13 @@ public class CandleStick extends JFrame implements ChartMouseListener{
 		}
 		
 		// Set up item listeners to recall constructor when radio button selections are changed
-//	    rdbtn5Min.addItemListener(new HandlerClass(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.FIVE));
-//	    rdbtn15Min.addItemListener(new HandlerClass(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.FIFTEEN));
-//	    rdbtn30Min.addItemListener(new HandlerClass(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.THIRTY));
-//	    rdbtn60Min.addItemListener(new HandlerClass(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.SIXTY));
-//	    rdbtnDaily.addItemListener(new HandlerClass(StockChartData.TimeFrame.DAILY, symbolName, StockChartData.Interval.FIVE));
-//	    rdbtnWeekly.addItemListener(new HandlerClass(StockChartData.TimeFrame.WEEKLY, symbolName, StockChartData.Interval.FIVE));
-//	    rdbtnMonthly.addItemListener(new HandlerClass(StockChartData.TimeFrame.MONTHLY, symbolName, StockChartData.Interval.FIVE));
+//	    rdbtn5Min.addItemListener(new HandlerClass(tech.pathtoprogramming.diamanteinvestments.StockChartData.TimeFrame.INTRADAY, symbolName, tech.pathtoprogramming.diamanteinvestments.StockChartData.Interval.FIVE));
+//	    rdbtn15Min.addItemListener(new HandlerClass(tech.pathtoprogramming.diamanteinvestments.StockChartData.TimeFrame.INTRADAY, symbolName, tech.pathtoprogramming.diamanteinvestments.StockChartData.Interval.FIFTEEN));
+//	    rdbtn30Min.addItemListener(new HandlerClass(tech.pathtoprogramming.diamanteinvestments.StockChartData.TimeFrame.INTRADAY, symbolName, tech.pathtoprogramming.diamanteinvestments.StockChartData.Interval.THIRTY));
+//	    rdbtn60Min.addItemListener(new HandlerClass(tech.pathtoprogramming.diamanteinvestments.StockChartData.TimeFrame.INTRADAY, symbolName, tech.pathtoprogramming.diamanteinvestments.StockChartData.Interval.SIXTY));
+//	    rdbtnDaily.addItemListener(new HandlerClass(tech.pathtoprogramming.diamanteinvestments.StockChartData.TimeFrame.DAILY, symbolName, tech.pathtoprogramming.diamanteinvestments.StockChartData.Interval.FIVE));
+//	    rdbtnWeekly.addItemListener(new HandlerClass(tech.pathtoprogramming.diamanteinvestments.StockChartData.TimeFrame.WEEKLY, symbolName, tech.pathtoprogramming.diamanteinvestments.StockChartData.Interval.FIVE));
+//	    rdbtnMonthly.addItemListener(new HandlerClass(tech.pathtoprogramming.diamanteinvestments.StockChartData.TimeFrame.MONTHLY, symbolName, tech.pathtoprogramming.diamanteinvestments.StockChartData.Interval.FIVE));
 //		
 	
 	// The following functions will aid in displaying the candlestick chart on to the chartPanel

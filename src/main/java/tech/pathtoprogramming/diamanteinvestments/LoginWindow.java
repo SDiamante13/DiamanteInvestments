@@ -1,3 +1,5 @@
+package tech.pathtoprogramming.diamanteinvestments;
+
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -12,9 +14,8 @@ import java.awt.event.ActionListener;
 import java.sql.*;
 import java.awt.event.ActionEvent;
 
-public class LoginWindow {
+public class LoginWindow extends JFrame {
 
-	protected JFrame loginFrame;
 	private JTextField txtUsername;
 	private JPasswordField txtPassword;
 	
@@ -30,9 +31,9 @@ public class LoginWindow {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					LoginWindow window = new LoginWindow();
-					window.loginFrame.setVisible(true);
-					window.loginFrame.setTitle("Diamante Investments - Login Page");
+					JFrame window = new LoginWindow();
+					window.setVisible(true);
+					window.setTitle("Diamante Investments - Login Page");
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -54,35 +55,34 @@ public class LoginWindow {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		loginFrame = new JFrame();
-		loginFrame.setBounds(100, 100, 424, 329);
-		loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		loginFrame.getContentPane().setLayout(null);
+		this.setBounds(100, 100, 424, 329);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.getContentPane().setLayout(null);
 		
 		JLabel lblNewLabel = new JLabel("Diamante Investments");
 		lblNewLabel.setFont(new Font("Edwardian Script ITC", Font.BOLD, 30));
 		lblNewLabel.setBounds(71, 23, 288, 57);
-		loginFrame.getContentPane().add(lblNewLabel);
+		this.getContentPane().add(lblNewLabel);
 		
 		JLabel lblUsername = new JLabel("Username");
 		lblUsername.setFont(new Font("Tahoma", Font.BOLD, 12));
 		lblUsername.setBounds(71, 103, 64, 26);
-		loginFrame.getContentPane().add(lblUsername);
+		this.getContentPane().add(lblUsername);
 		
 		JLabel lblPassword = new JLabel("Password");
 		lblPassword.setFont(new Font("Tahoma", Font.BOLD, 12));
 		lblPassword.setBounds(71, 140, 64, 26);
-		loginFrame.getContentPane().add(lblPassword);
+		this.getContentPane().add(lblPassword);
 		
 		txtUsername = new JTextField();
 		txtUsername.setBounds(145, 103, 96, 23);
-		loginFrame.getContentPane().add(txtUsername);
+		this.getContentPane().add(txtUsername);
 		txtUsername.setColumns(10);
 		
 		txtPassword = new JPasswordField();
 		txtPassword.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		txtPassword.setBounds(145, 143, 96, 23);
-		loginFrame.getContentPane().add(txtPassword);
+		this.getContentPane().add(txtPassword);
 		
 		JButton btnLogin = new JButton("Login");
 		btnLogin.addActionListener(new ActionListener() {
@@ -100,7 +100,7 @@ public class LoginWindow {
 					}
 					if(count == 1) {
 						JOptionPane.showMessageDialog(null, "Username and password is correct");
-						loginFrame.dispose();
+						//this.dispose();
 						StockForm stockWindow = new StockForm(txtUsername.getText().trim());
 						stockWindow.setVisible(true);
 						stockWindow.setTitle("Diamante Investments - Stock Portfolio");
@@ -122,7 +122,7 @@ public class LoginWindow {
 		});
 		btnLogin.setFont(new Font("Tahoma", Font.BOLD, 12));
 		btnLogin.setBounds(81, 192, 160, 26);
-		loginFrame.getContentPane().add(btnLogin);
+		this.getContentPane().add(btnLogin);
 		
 		JButton btnNewButton = new JButton("Create new account");
 		btnNewButton.addActionListener(new ActionListener() {
@@ -133,6 +133,6 @@ public class LoginWindow {
 		});
 		btnNewButton.setFont(new Font("Tahoma", Font.BOLD, 12));
 		btnNewButton.setBounds(81, 229, 160, 26);
-		loginFrame.getContentPane().add(btnNewButton);
+		this.getContentPane().add(btnNewButton);
 	}
 }

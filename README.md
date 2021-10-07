@@ -20,7 +20,7 @@ The scripts in sql-scripts/ will create the necessary tables
 
 ## Viewing SQL database
 
-Enter container: `winpty docker exec -it diamanteinvestments_db_1 bash`
+Enter container: `winpty docker exec -it diamanteinvestments-db-1 bash`
 
 Enter creds: `mysql -usa -ppassword`
 

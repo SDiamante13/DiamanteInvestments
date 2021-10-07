@@ -1,3 +1,5 @@
+package tech.pathtoprogramming.diamanteinvestments;
+
 import java.util.Date;
 import java.net.URL;
 import java.net.URLConnection;
