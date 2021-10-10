@@ -33,3 +33,7 @@ Show tables: `SHOW TABLES;`
 The unit tests use AssertJ Swing to interact with the GUI and assert behavior.
 
 Reference: https://joel-costigliola.github.io/assertj/assertj-swing.html
+
+### Swing Resources
+
+https://docs.oracle.com/javase/tutorial/uiswing/examples/components/index.html

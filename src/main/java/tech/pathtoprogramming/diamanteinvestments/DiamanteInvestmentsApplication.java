@@ -14,7 +14,7 @@ public class DiamanteInvestmentsApplication {
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
-                JFrame window = new LoginWindow();
+                JFrame window = new LoginWindow(DBConnection.dbConnecter());
                 window.setVisible(true);
                 window.setTitle("Diamante Investments - Login Page");
             } catch (Exception e) {

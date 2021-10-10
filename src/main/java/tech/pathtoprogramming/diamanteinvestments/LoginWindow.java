@@ -13,27 +13,17 @@ public class LoginWindow extends JFrame {
     private JTextField txtUsername;
     private JPasswordField txtPassword;
 
-    Connection connection = null;
+    private final Connection connection;
 
-    /**
-     * Create the application.
-     */
-    public LoginWindow() {
-        initialize();
-        connection = DBConnection.dbConnecter();
-    }
-
-    /**
-     * Create the application.
-     */
     public LoginWindow(Connection connection) {
         initialize();
         this.connection = connection;
     }
 
-    /**
-     * Initialize the contents of the frame.
-     */
+    private void destroy() {
+        this.dispose();
+    }
+
     private void initialize() {
         this.setBounds(100, 100, 424, 329);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -83,7 +73,7 @@ public class LoginWindow extends JFrame {
                     }
                     if (count == 1) {
                         JOptionPane.showMessageDialog(null, "Username and password is correct");
-                        //this.dispose();
+                        destroy();
                         StockForm stockWindow = new StockForm(connection, txtUsername.getText().trim());
                         stockWindow.setVisible(true);
                         stockWindow.setTitle("Diamante Investments - Stock Portfolio");
@@ -96,7 +86,7 @@ public class LoginWindow extends JFrame {
                     rs.close();
                     pst.close();
                 } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, e);
+                    JOptionPane.showMessageDialog(null, e, "Error Occurred", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
