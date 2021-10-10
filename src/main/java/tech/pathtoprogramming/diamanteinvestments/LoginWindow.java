@@ -94,10 +94,8 @@ public class LoginWindow extends JFrame {
         return actionEvent -> {
             try {
                 Pair<PreparedStatement, ResultSet> queryPair = executeLoginQuery();
-                PreparedStatement pst = queryPair.getValue0();
-                ResultSet rs = queryPair.getValue1();
 
-                if (doesUserExist(rs)) {
+                if (doesUserExist(queryPair.getValue1())) {
                     JOptionPane.showMessageDialog(null, "Username and password is correct");
                     destroy();
 
@@ -109,8 +107,8 @@ public class LoginWindow extends JFrame {
                     JOptionPane.showMessageDialog(null, "Username and password is incorrect");
                 }
 
-                rs.close();
-                pst.close();
+                queryPair.getValue1().close();
+                queryPair.getValue0().close();
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, e, "Error Occurred", JOptionPane.ERROR_MESSAGE);
             }
