@@ -1,12 +1,15 @@
 package tech.pathtoprogramming.diamanteinvestments;
 
+import org.javatuples.Pair;
+import tech.pathtoprogramming.diamanteinvestments.model.Bounds;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class LoginWindow extends JFrame {
 
@@ -16,8 +19,8 @@ public class LoginWindow extends JFrame {
     private final Connection connection;
 
     public LoginWindow(Connection connection) {
-        initialize();
         this.connection = connection;
+        initialize();
     }
 
     private void destroy() {
@@ -25,85 +28,116 @@ public class LoginWindow extends JFrame {
     }
 
     private void initialize() {
+        configureJFrameOptions();
+
+        buildLabel(
+                "Diamante Investments",
+                new Font("Edwardian Script ITC", Font.BOLD, 30),
+                new Bounds(71, 23, 288, 57)
+        );
+        buildLabel(
+                "Username",
+                new Font("Tahoma", Font.BOLD, 12),
+                new Bounds(71, 103, 64, 26)
+        );
+        buildLabel(
+                "Password",
+                new Font("Tahoma", Font.BOLD, 12),
+                new Bounds(71, 140, 64, 26)
+        );
+        buildTextField("txtUsername", new Bounds(145, 103, 96, 23));
+        buildPasswordField("txtPassword", new Bounds(145, 143, 96, 23));
+
+        buildButton("btnLogin", "Login", new Bounds(81, 192, 160, 26), loginActionListener());
+        buildButton("btnNewButton", "Create new account", new Bounds(81, 229, 160, 26), newAccountActionListener());
+    }
+
+    private void configureJFrameOptions() {
         this.setBounds(100, 100, 424, 329);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.getContentPane().setLayout(null);
+    }
 
-        JLabel lblNewLabel = new JLabel("Diamante Investments");
-        lblNewLabel.setFont(new Font("Edwardian Script ITC", Font.BOLD, 30));
-        lblNewLabel.setBounds(71, 23, 288, 57);
+    private void buildLabel(String text, Font font, Bounds bounds) {
+        JLabel lblNewLabel = new JLabel(text);
+        lblNewLabel.setFont(font);
+        lblNewLabel.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
         this.getContentPane().add(lblNewLabel);
+    }
 
-        JLabel lblUsername = new JLabel("Username");
-        lblUsername.setFont(new Font("Tahoma", Font.BOLD, 12));
-        lblUsername.setBounds(71, 103, 64, 26);
-        this.getContentPane().add(lblUsername);
-
-        JLabel lblPassword = new JLabel("Password");
-        lblPassword.setFont(new Font("Tahoma", Font.BOLD, 12));
-        lblPassword.setBounds(71, 140, 64, 26);
-        this.getContentPane().add(lblPassword);
-
+    private void buildTextField(String id, Bounds bounds) {
         txtUsername = new JTextField();
-        txtUsername.setName("txtUsername");
-        txtUsername.setBounds(145, 103, 96, 23);
-        this.getContentPane().add(txtUsername);
+        txtUsername.setName(id);
+        txtUsername.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
         txtUsername.setColumns(10);
+        this.getContentPane().add(txtUsername);
+    }
 
+    private void buildPasswordField(String id, Bounds bounds) {
         txtPassword = new JPasswordField();
-        txtPassword.setName("txtPassword");
+        txtPassword.setName(id);
         txtPassword.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        txtPassword.setBounds(145, 143, 96, 23);
+        txtPassword.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
         this.getContentPane().add(txtPassword);
+    }
 
-        JButton btnLogin = new JButton("Login");
-        btnLogin.setName("btnLogin");
-        btnLogin.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                try {
-                    String query = "select * from PortfolioLogins where username=? and password=?";
-                    PreparedStatement pst = connection.prepareStatement(query);
-                    pst.setString(1, txtUsername.getText());
-                    pst.setString(2, txtPassword.getText());
-                    ResultSet rs = pst.executeQuery();
-                    int count = 0;
-                    while (rs.next()) {
-                        count++;
-                    }
-                    if (count == 1) {
-                        JOptionPane.showMessageDialog(null, "Username and password is correct");
-                        destroy();
-                        StockForm stockWindow = new StockForm(connection, txtUsername.getText().trim());
-                        stockWindow.setVisible(true);
-                        stockWindow.setTitle("Diamante Investments - Stock Portfolio");
-                        stockWindow.setName("stockWindow");
-                    } else if (count > 1) {
-                        JOptionPane.showMessageDialog(null, "Duplicate username and password");
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Username and password is incorrect");
-                    }
-                    rs.close();
-                    pst.close();
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, e, "Error Occurred", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
+    private void buildButton(String id, String text, Bounds bounds, ActionListener actionListener) {
+        JButton btnLogin = new JButton(text);
+        btnLogin.setName(id);
         btnLogin.setFont(new Font("Tahoma", Font.BOLD, 12));
-        btnLogin.setBounds(81, 192, 160, 26);
+        btnLogin.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
+        btnLogin.addActionListener(actionListener);
         this.getContentPane().add(btnLogin);
+    }
 
-        JButton btnNewButton = new JButton("Create new account");
-        btnNewButton.setName("btnNewButton");
-        btnNewButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                NewAccount newUser = new NewAccount();
-                newUser.getNewAccountFrame().setVisible(true);
+    private ActionListener loginActionListener() {
+        return actionEvent -> {
+            try {
+                Pair<PreparedStatement, ResultSet> queryPair = executeLoginQuery();
+                PreparedStatement pst = queryPair.getValue0();
+                ResultSet rs = queryPair.getValue1();
+
+                if (doesUserExist(rs)) {
+                    JOptionPane.showMessageDialog(null, "Username and password is correct");
+                    destroy();
+
+                    StockForm stockWindow = new StockForm(connection, txtUsername.getText().trim());
+                    stockWindow.setVisible(true);
+                    stockWindow.setTitle("Diamante Investments - Stock Portfolio");
+                    stockWindow.setName("stockWindow");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Username and password is incorrect");
+                }
+
+                rs.close();
+                pst.close();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, e, "Error Occurred", JOptionPane.ERROR_MESSAGE);
             }
-        });
-        btnNewButton.setFont(new Font("Tahoma", Font.BOLD, 12));
-        btnNewButton.setBounds(81, 229, 160, 26);
-        this.getContentPane().add(btnNewButton);
+        };
+    }
+
+    private Pair<PreparedStatement, ResultSet> executeLoginQuery() throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement("select * from PortfolioLogins where username=? and password=?");
+        preparedStatement.setString(1, txtUsername.getText());
+        preparedStatement.setString(2, String.valueOf(txtPassword.getPassword()));
+        ResultSet resultSet = preparedStatement.executeQuery();
+        return new Pair<>(preparedStatement, resultSet);
+    }
+
+    private boolean doesUserExist(ResultSet rs) throws SQLException {
+        int count = 0;
+        while (rs.next()) {
+            count++;
+        }
+
+        return count >= 1;
+    }
+
+    private ActionListener newAccountActionListener() {
+        return actionEvent -> {
+            NewAccount newUser = new NewAccount();
+            newUser.getNewAccountFrame().setVisible(true);
+        };
     }
 }

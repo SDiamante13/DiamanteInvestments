@@ -61,16 +61,6 @@ public class LoginWindowTest extends AssertJSwingJUnitTestCase {
     }
 
     @Test
-    public void theUserIsReturnedBackToTheLoginWindowWhenMultiplesOfTheUsernameExistsInTheDatabase() throws Exception {
-        when(mockResultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
-
-        logInWithUser();
-        dismissDialog();
-
-        window.requireVisible();
-    }
-
-    @Test
     public void anErrorDialogIsShownWhenTheDatabaseQueryFails() throws Exception {
         String error = "Something went wrong while attempting log in. Please try again later.";
         when(mockPreparedStatement.executeQuery())
