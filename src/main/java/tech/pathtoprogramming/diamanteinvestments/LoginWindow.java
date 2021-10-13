@@ -1,25 +1,21 @@
 package tech.pathtoprogramming.diamanteinvestments;
 
-import org.javatuples.Pair;
 import tech.pathtoprogramming.diamanteinvestments.model.Bounds;
+import tech.pathtoprogramming.diamanteinvestments.repository.LoginRepository;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class LoginWindow extends JFrame {
+
+    private final LoginRepository loginRepository;
 
     private JTextField txtUsername;
     private JPasswordField txtPassword;
 
-    private final Connection connection;
-
-    public LoginWindow(Connection connection) {
-        this.connection = connection;
+    public LoginWindow(LoginRepository loginRepository) {
+        this.loginRepository = loginRepository;
         initialize();
     }
 
@@ -93,43 +89,21 @@ public class LoginWindow extends JFrame {
     private ActionListener loginActionListener() {
         return actionEvent -> {
             try {
-                Pair<PreparedStatement, ResultSet> queryPair = executeLoginQuery();
-
-                if (doesUserExist(queryPair.getValue1())) {
+                if (loginRepository.doesUsernameExist(txtUsername.getText(), txtPassword.getPassword())) {
                     JOptionPane.showMessageDialog(null, "Username and password is correct");
                     destroy();
 
-                    StockForm stockWindow = new StockForm(connection, txtUsername.getText().trim());
+                    StockForm stockWindow = new StockForm(loginRepository.getConnection(), txtUsername.getText().trim());
                     stockWindow.setVisible(true);
                     stockWindow.setTitle("Diamante Investments - Stock Portfolio");
                     stockWindow.setName("stockWindow");
                 } else {
                     JOptionPane.showMessageDialog(null, "Username and password is incorrect");
                 }
-
-                queryPair.getValue1().close();
-                queryPair.getValue0().close();
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, e, "Error Occurred", JOptionPane.ERROR_MESSAGE);
             }
         };
-    }
-
-    private Pair<PreparedStatement, ResultSet> executeLoginQuery() throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement("select * from PortfolioLogins where username=? and password=?");
-        preparedStatement.setString(1, txtUsername.getText());
-        preparedStatement.setString(2, String.valueOf(txtPassword.getPassword()));
-        ResultSet resultSet = preparedStatement.executeQuery();
-        return new Pair<>(preparedStatement, resultSet);
-    }
-
-    private boolean doesUserExist(ResultSet rs) throws SQLException {
-        int count = 0;
-        while (rs.next()) {
-            count++;
-        }
-
-        return count >= 1;
     }
 
     private ActionListener newAccountActionListener() {

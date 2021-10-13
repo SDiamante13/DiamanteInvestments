@@ -1,5 +1,7 @@
 package tech.pathtoprogramming.diamanteinvestments;
 
+import tech.pathtoprogramming.diamanteinvestments.repository.LoginRepository;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -14,7 +16,8 @@ public class DiamanteInvestmentsApplication {
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
-                JFrame window = new LoginWindow(DBConnection.dbConnecter());
+                LoginRepository loginRepository = new LoginRepository(DBConnection.dbConnecter());
+                JFrame window = new LoginWindow(loginRepository);
                 window.setVisible(true);
                 window.setTitle("Diamante Investments - Login Page");
             } catch (Exception e) {

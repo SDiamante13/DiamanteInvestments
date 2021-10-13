@@ -6,6 +6,7 @@ import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JOptionPaneFixture;
 import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
 import org.junit.Test;
+import tech.pathtoprogramming.diamanteinvestments.repository.LoginRepository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -20,19 +21,19 @@ import static org.mockito.Mockito.when;
 
 public class LoginWindowTest extends AssertJSwingJUnitTestCase {
     private FrameFixture window;
-    private final Connection mockConnection = mock(Connection.class);
-    private final PreparedStatement mockPreparedStatement = mock(PreparedStatement.class);
-    private final ResultSet mockResultSet = mock(ResultSet.class);
+    private LoginRepository mockLoginRepository = mock(LoginRepository.class);
+
+    private final String username = "BJoel";
+    private final char[] password = "pianoman".toCharArray();
 
     @Override
     protected void onSetUp() {
-        mockDatabaseConnection();
         initializeWindow();
     }
 
     @Test
     public void theStockFormIsDisplayedWhenTheUsernameAndPasswordCombinationExistsInTheDatabase() throws Exception {
-        when(mockResultSet.next()).thenReturn(true).thenReturn(false);
+        when(mockLoginRepository.doesUsernameExist(username, password)).thenReturn(true);
 
         logInWithUser();
         dismissDialog();
@@ -42,7 +43,7 @@ public class LoginWindowTest extends AssertJSwingJUnitTestCase {
 
     @Test
     public void theLoginWindowClosesWhenLoginIsSuccessful() throws Exception {
-        when(mockResultSet.next()).thenReturn(true).thenReturn(false);
+        when(mockLoginRepository.doesUsernameExist(username, password)).thenReturn(true);
 
         logInWithUser();
         dismissDialog();
@@ -52,7 +53,7 @@ public class LoginWindowTest extends AssertJSwingJUnitTestCase {
 
     @Test
     public void theUserIsReturnedBackToTheLoginWindowOnAFailedLoginAttempt() throws Exception {
-        when(mockResultSet.next()).thenReturn(false);
+        when(mockLoginRepository.doesUsernameExist(username, password)).thenReturn(false);
 
         logInWithUser();
         dismissDialog();
@@ -63,8 +64,7 @@ public class LoginWindowTest extends AssertJSwingJUnitTestCase {
     @Test
     public void anErrorDialogIsShownWhenTheDatabaseQueryFails() throws Exception {
         String error = "Something went wrong while attempting log in. Please try again later.";
-        when(mockPreparedStatement.executeQuery())
-                .thenThrow(new SQLException(error));
+        when(mockLoginRepository.doesUsernameExist(username, password)).thenThrow(new SQLException(error));
 
         logInWithUser();
 
@@ -80,25 +80,16 @@ public class LoginWindowTest extends AssertJSwingJUnitTestCase {
         assertThat(findFrame("newAccountFrame").using(robot())).isNotNull();
     }
 
-    private void mockDatabaseConnection() {
-        try {
-            when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStatement);
-            when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void initializeWindow() {
-        LoginWindow frame = GuiActionRunner.execute(() -> new LoginWindow(mockConnection));
+        LoginWindow frame = GuiActionRunner.execute(() -> new LoginWindow(mockLoginRepository));
         window = new FrameFixture(robot(), frame);
         window.show();
         window.maximize();
     }
 
     private void logInWithUser() {
-        window.textBox("txtUsername").enterText("BJoel");
-        window.textBox("txtPassword").enterText("pianoman");
+        window.textBox("txtUsername").enterText(username);
+        window.textBox("txtPassword").enterText(String.valueOf(password));
         window.button("btnLogin").click();
     }
 
