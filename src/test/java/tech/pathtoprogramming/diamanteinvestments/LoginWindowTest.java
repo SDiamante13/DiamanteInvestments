@@ -5,23 +5,24 @@ import org.assertj.swing.finder.JOptionPaneFinder;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JOptionPaneFixture;
 import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
+import org.awaitility.Awaitility;
 import org.junit.Test;
+import sun.reflect.annotation.ExceptionProxy;
 import tech.pathtoprogramming.diamanteinvestments.repository.LoginRepository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.util.concurrent.Callable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.swing.finder.WindowFinder.findFrame;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class LoginWindowTest extends AssertJSwingJUnitTestCase {
     private FrameFixture window;
-    private LoginRepository mockLoginRepository = mock(LoginRepository.class);
+    private final LoginRepository mockLoginRepository = mock(LoginRepository.class);
 
     private final String username = "BJoel";
     private final char[] password = "pianoman".toCharArray();
@@ -73,6 +74,22 @@ public class LoginWindowTest extends AssertJSwingJUnitTestCase {
     }
 
     @Test
+    public void displayRedErrorTextWhenEitherFieldIsBlank() {
+        logInWithBlankFields();
+
+        await()
+                .until(() -> {
+                    try {
+                        window.label("lblValidation").requireVisible();
+                        return true;
+                    } catch(Exception e) {
+                        return false;
+                    }
+                });
+
+    }
+
+    @Test
     public void anErrorDialogIsShownWhenTheDatabaseQueryFails() throws Exception {
         String error = "Something went wrong while attempting log in. Please try again later.";
         when(mockLoginRepository.doesUsernameExist(username, password)).thenThrow(new SQLException(error));
@@ -107,5 +124,10 @@ public class LoginWindowTest extends AssertJSwingJUnitTestCase {
     private void dismissDialog() {
         JOptionPaneFixture optionPane = JOptionPaneFinder.findOptionPane().withTimeout(10000).using(robot());
         optionPane.button("OptionPane.button").click();
+    }
+
+    private void logInWithBlankFields() {
+        window.textBox("txtUsername").enterText(username);
+        window.button("btnLogin").click();
     }
 }
