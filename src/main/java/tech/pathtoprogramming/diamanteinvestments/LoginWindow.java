@@ -99,11 +99,17 @@ public class LoginWindow extends JFrame {
                     stockWindow.setName("stockWindow");
                 } else {
                     JOptionPane.showMessageDialog(null, "Username and password is incorrect");
+                    clearScreen();
                 }
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, e, "Error Occurred", JOptionPane.ERROR_MESSAGE);
             }
         };
+    }
+
+    private void clearScreen() {
+        txtUsername.setText("");
+        txtPassword.setText("");
     }
 
     private ActionListener newAccountActionListener() {

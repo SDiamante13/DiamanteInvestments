@@ -62,6 +62,17 @@ public class LoginWindowTest extends AssertJSwingJUnitTestCase {
     }
 
     @Test
+    public void theFieldsAreClearedOnAnUnsuccessfulLogin() throws Exception {
+        when(mockLoginRepository.doesUsernameExist(username, password)).thenReturn(false);
+
+        logInWithUser();
+        dismissDialog();
+
+        window.textBox("txtUsername").requireEmpty();
+        window.textBox("txtPassword").requireEmpty();
+    }
+
+    @Test
     public void anErrorDialogIsShownWhenTheDatabaseQueryFails() throws Exception {
         String error = "Something went wrong while attempting log in. Please try again later.";
         when(mockLoginRepository.doesUsernameExist(username, password)).thenThrow(new SQLException(error));
