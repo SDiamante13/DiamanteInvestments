@@ -1,12 +1,16 @@
 package tech.pathtoprogramming.diamanteinvestments;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.xml.bind.ValidationException;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
 
+@Slf4j
 public class NewAccount extends JFrame {
 
     private JPanel contentPane;
@@ -100,43 +104,6 @@ public class NewAccount extends JFrame {
         txtUsername.setBounds(163, 180, 115, 20);
         contentPane.add(txtUsername);
 
-        JButton btnNewButton = new JButton("Create");
-        btnNewButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                try {
-                    //-------------------------------------------------------------------
-                    // check if Password and create password are same
-                    boolean error = false;
-                    if (!txtPassword.getText().equals(txtConfirmPassword.getText())) { // not same, try again
-                        JOptionPane.showMessageDialog(null, "Passwords must be same to be confirmed. Please try again.");
-                        error = true;
-                    }
-
-                    if (isUsernameTaken()) {
-                        JOptionPane.showMessageDialog(null, "This username is already being used. Please select another username.");
-                        error = true;
-                    }
-
-
-                    if (!error) {
-                        insertNewAccountIntoDatabase();
-
-                        createUserWatchlistTable();
-
-                        JOptionPane.showMessageDialog(null, "New User Created!");
-                        destroy();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-
-                }
-            }
-        });
-        btnNewButton.setFont(new Font("Calibri", Font.BOLD, 14));
-        btnNewButton.setBounds(37, 309, 108, 38);
-        btnNewButton.setName("btnNewButton");
-        contentPane.add(btnNewButton);
-
         JLabel lblNewUser = new JLabel("");
         Image imageNewUser = new ImageIcon(this.getClass().getResource("/newUser.png")).getImage();
         lblNewUser.setIcon(new ImageIcon(imageNewUser));
@@ -144,12 +111,45 @@ public class NewAccount extends JFrame {
         contentPane.add(lblNewUser);
 
         txtPassword = new JPasswordField();
+        txtPassword.setName("txtPassword");
         txtPassword.setBounds(163, 213, 115, 22);
         contentPane.add(txtPassword);
 
         txtConfirmPassword = new JPasswordField();
+        txtConfirmPassword.setName("txtConfirmPassword");
         txtConfirmPassword.setBounds(164, 257, 115, 22);
         contentPane.add(txtConfirmPassword);
+
+        JButton btnNewButton = new JButton("Create");
+        btnNewButton.addActionListener(createAccountActionListener());
+        btnNewButton.setFont(new Font("Calibri", Font.BOLD, 14));
+        btnNewButton.setBounds(37, 309, 108, 38);
+        btnNewButton.setName("btnNewButton");
+        contentPane.add(btnNewButton);
+    }
+
+    private ActionListener createAccountActionListener() {
+        return actionEvent -> {
+            try {
+                if (!txtPassword.getText().equals(txtConfirmPassword.getText())) { // not same, try again
+                    throw new ValidationException("Passwords must be same to be confirmed. Please try again.");
+                }
+
+                if (isUsernameTaken()) {
+                    throw new ValidationException("This username is already being used. Please select another username.");
+                }
+
+                insertNewAccountIntoDatabase();
+
+                createUserWatchlistTable();
+
+                JOptionPane.showMessageDialog(null, "New User Created!");
+                destroy();
+            } catch (Exception e) {
+                log.error("New Account Failure: ", e);
+                JOptionPane.showMessageDialog(null, e.getMessage(), "Error Occurred", JOptionPane.ERROR_MESSAGE);
+            }
+        };
     }
 
     public boolean isUsernameTaken() throws SQLException {
