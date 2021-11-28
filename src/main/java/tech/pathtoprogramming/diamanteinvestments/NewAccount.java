@@ -5,21 +5,17 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 
-public class NewAccount {
+public class NewAccount extends JFrame {
 
-    private JFrame newAccountFrame;
     private JPanel contentPane;
     private JTextField txtName;
     private JTextField txtLastName;
     private JTextField txtEmail;
     private JTextField txtUsername;
 
-    Connection connection = null;
+    Connection connection;
     private JPasswordField txtPassword;
     private JPasswordField txtConfirmPassword;
 
@@ -27,16 +23,25 @@ public class NewAccount {
      * Create the frame.
      */
     public NewAccount() {
-        newAccountFrame = new JFrame();
-        newAccountFrame.setName("newAccountFrame");
-        newAccountFrame.setBounds(100, 100, 424, 329);
-        newAccountFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        newAccountFrame.getContentPane().setLayout(null);
-        connection = DBConnection.dbConnecter();
-        newAccountFrame.setBounds(100, 100, 524, 413);
+        this.connection = DBConnection.dbConnecter();
+        initialize();
+    }
+
+    public NewAccount(Connection connection) {
+        this.connection = connection;
+        initialize();
+    }
+
+    private void initialize() {
+        this.setName("newAccountFrame");
+        this.setBounds(100, 100, 424, 329);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        this.getContentPane().setLayout(null);
+        this.setBounds(100, 100, 524, 413);
+
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        newAccountFrame.setContentPane(contentPane);
+        this.setContentPane(contentPane);
         contentPane.setLayout(null);
 
         JLabel lblCreateANew = new JLabel("Create a new account");
@@ -106,42 +111,20 @@ public class NewAccount {
                         JOptionPane.showMessageDialog(null, "Passwords must be same to be confirmed. Please try again.");
                         error = true;
                     }
-                    //--------------------------------------------------------------------
-                    // check if username is unique
-                    String query = "select * from PortfolioLogins where username=?";
-                    PreparedStatement pst = connection.prepareStatement(query);
-                    pst.setString(1, txtUsername.getText());
-                    ResultSet r1 = pst.executeQuery();
-                    while (r1.next()) {
+
+                    if (isUsernameTaken()) {
                         JOptionPane.showMessageDialog(null, "This username is already being used. Please select another username.");
                         error = true;
                     }
-                    if (!error) { // no errors, eneter new account into SQLite
-                        String query2 = "insert into PortfolioLogins (Name, Surname, Email, Username, Password, Confirm) values (?, ?, ?, ?, ?, ?)";
-                        PreparedStatement pst2 = connection.prepareStatement(query2);
-                        pst2.setString(1, txtName.getText());
-                        pst2.setString(2, txtLastName.getText());
-                        pst2.setString(3, txtEmail.getText());
-                        pst2.setString(4, txtUsername.getText());
-                        pst2.setString(5, txtPassword.getText());
-                        pst2.setString(6, txtConfirmPassword.getText());
-                        pst2.execute();
 
-                        //-------------------------------------------------------
-                        // Create unique User Watchlist table
 
-                        Statement stmt = connection.createStatement();
-                        // Create unique User Watchlist table
-                        String tableName = txtUsername.getText() + "WatchList";
-                        String create = "CREATE TABLE IF NOT EXISTS " + tableName + "(symbol varchar(10) PRIMARY KEY UNIQUE)";
-                        stmt.execute(create);
+                    if (!error) {
+                        insertNewAccountIntoDatabase();
+
+                        createUserWatchlistTable();
 
                         JOptionPane.showMessageDialog(null, "New User Created!");
-                        pst.close();
-                        r1.close();
-                        pst2.close();
-                        stmt.close();
-                        newAccountFrame.dispose();
+                        destroy();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -151,6 +134,7 @@ public class NewAccount {
         });
         btnNewButton.setFont(new Font("Calibri", Font.BOLD, 14));
         btnNewButton.setBounds(37, 309, 108, 38);
+        btnNewButton.setName("btnNewButton");
         contentPane.add(btnNewButton);
 
         JLabel lblNewUser = new JLabel("");
@@ -168,8 +152,51 @@ public class NewAccount {
         contentPane.add(txtConfirmPassword);
     }
 
+    public boolean isUsernameTaken() throws SQLException {
+        boolean isUsernameTaken = false;
+        String query = "select * from PortfolioLogins where username=?";
+        PreparedStatement pst = connection.prepareStatement(query);
+        pst.setString(1, txtUsername.getText());
+        ResultSet r1 = pst.executeQuery();
+        if (r1.next()) {
+            isUsernameTaken = true;
+        }
+        pst.close();
+        r1.close();
+        return isUsernameTaken;
+    }
+
+    public void insertNewAccountIntoDatabase() throws SQLException {
+        // if no errors, enter new account into database
+        String query2 = "insert into PortfolioLogins (Name, Surname, Email, Username, Password, Confirm) values (?, ?, ?, ?, ?, ?)";
+        PreparedStatement pst2 = connection.prepareStatement(query2);
+        pst2.setString(1, txtName.getText());
+        pst2.setString(2, txtLastName.getText());
+        pst2.setString(3, txtEmail.getText());
+        pst2.setString(4, txtUsername.getText());
+        pst2.setString(5, txtPassword.getText());
+        pst2.setString(6, txtConfirmPassword.getText());
+        pst2.execute();
+        pst2.close();
+    }
+
+    public void createUserWatchlistTable() throws SQLException {
+        //-------------------------------------------------------
+        // Create unique User Watchlist table
+        Statement stmt = connection.createStatement();
+        // Create unique User Watchlist table
+        String tableName = txtUsername.getText() + "WatchList";
+        String create = "CREATE TABLE IF NOT EXISTS " + tableName + "(symbol varchar(10) PRIMARY KEY UNIQUE)";
+        stmt.execute(create);
+        stmt.close();
+    }
+
+    private void destroy() {
+        this.dispose();
+    }
+
     public JFrame getNewAccountFrame() {
-        return newAccountFrame;
+        return this;
     }
 
 }
