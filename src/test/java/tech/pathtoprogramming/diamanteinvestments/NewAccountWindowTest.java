@@ -7,15 +7,12 @@ import org.assertj.swing.fixture.JOptionPaneFixture;
 import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class NewAccountTest extends AssertJSwingJUnitTestCase {
+public class NewAccountWindowTest extends AssertJSwingJUnitTestCase {
 
     private FrameFixture window;
     private Connection mockConnection;
@@ -38,11 +35,12 @@ public class NewAccountTest extends AssertJSwingJUnitTestCase {
         when(mockConnection.prepareStatement(any())).thenReturn(mockPreparedStatement);
         when(mockConnection.createStatement()).thenReturn(mockStatement);
         when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
-
+        
         window.button("btnNewButton").click();
         JOptionPaneFixture optionPane = JOptionPaneFinder.findOptionPane().withTimeout(10000).using(robot());
         optionPane.button("OptionPane.button").click();
-
+        
+        optionPane.requireMessage("New User Created!");
         window.requireNotVisible();
     }
 
@@ -74,15 +72,27 @@ public class NewAccountTest extends AssertJSwingJUnitTestCase {
 
         JOptionPaneFixture optionPane = JOptionPaneFinder.findOptionPane().withTimeout(10000).using(robot());
         optionPane.requireMessage("This username is already being used. Please select another username.");
-        optionPane.button("OptionPane.button").click();
+        optionPane.requireErrorMessage();
+    }
+
+    @Test
+    public void anErrorMessageIsShownWhenTheAccountIsNotAbleToBeInsertedIntoTheDatabase() throws SQLException {
+        when(mockConnection.prepareStatement(any())).thenReturn(mockPreparedStatement);
+        when(mockConnection.createStatement()).thenReturn(mockStatement);
+        when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
+        when(mockPreparedStatement.execute()).thenThrow(new SQLException("Connection error occurred"));
+
+        window.button("btnNewButton").click();
+
+        JOptionPaneFixture optionPane = JOptionPaneFinder.findOptionPane().withTimeout(10000).using(robot());
+        optionPane.requireMessage("Connection error occurred");
         optionPane.requireErrorMessage();
     }
 
     private void initializeWindow() {
-        NewAccount frame = GuiActionRunner.execute(() -> new NewAccount(mockConnection));
+        NewAccountWindow frame = GuiActionRunner.execute(() -> new NewAccountWindow(mockConnection));
         window = new FrameFixture(robot(), frame);
         window.show();
         window.maximize();
     }
-
 }

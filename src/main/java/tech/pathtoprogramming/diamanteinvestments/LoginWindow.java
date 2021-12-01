@@ -160,7 +160,7 @@ public class LoginWindow extends JFrame {
 
     private ActionListener newAccountActionListener() {
         return actionEvent -> {
-            NewAccount newUser = new NewAccount();
+            NewAccountWindow newUser = new NewAccountWindow();
             newUser.getNewAccountFrame().setVisible(true);
         };
     }

@@ -6,12 +6,11 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.xml.bind.ValidationException;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
 
 @Slf4j
-public class NewAccount extends JFrame {
+public class NewAccountWindow extends JFrame {
 
     private JPanel contentPane;
     private JTextField txtName;
@@ -26,12 +25,12 @@ public class NewAccount extends JFrame {
     /**
      * Create the frame.
      */
-    public NewAccount() {
+    public NewAccountWindow() {
         this.connection = DBConnection.dbConnecter();
         initialize();
     }
 
-    public NewAccount(Connection connection) {
+    public NewAccountWindow(Connection connection) {
         this.connection = connection;
         initialize();
     }
