@@ -1,6 +1,8 @@
 package tech.pathtoprogramming.diamanteinvestments;
 
 import lombok.extern.slf4j.Slf4j;
+import tech.pathtoprogramming.diamanteinvestments.model.Bounds;
+import tech.pathtoprogramming.diamanteinvestments.model.UserAccount;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -12,23 +14,14 @@ import java.sql.*;
 @Slf4j
 public class NewAccountWindow extends JFrame {
 
-    private JPanel contentPane;
-    private JTextField txtName;
+    private final Connection connection;
+
+    private JTextField txtFirstName;
     private JTextField txtLastName;
     private JTextField txtEmail;
     private JTextField txtUsername;
-
-    Connection connection;
     private JPasswordField txtPassword;
     private JPasswordField txtConfirmPassword;
-
-    /**
-     * Create the frame.
-     */
-    public NewAccountWindow() {
-        this.connection = DBConnection.dbConnecter();
-        initialize();
-    }
 
     public NewAccountWindow(Connection connection) {
         this.connection = connection;
@@ -36,111 +29,142 @@ public class NewAccountWindow extends JFrame {
     }
 
     private void initialize() {
-        this.setName("newAccountFrame");
-        this.setBounds(100, 100, 424, 329);
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        this.getContentPane().setLayout(null);
+        configureJFrameOptions();
+
         this.setBounds(100, 100, 524, 413);
 
-        contentPane = new JPanel();
+        JPanel contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         this.setContentPane(contentPane);
         contentPane.setLayout(null);
 
-        JLabel lblCreateANew = new JLabel("Create a new account");
-        lblCreateANew.setFont(new Font("Calibri", Font.BOLD, 18));
-        lblCreateANew.setBounds(118, 11, 186, 59);
-        contentPane.add(lblCreateANew);
+        JLabel lblNewUser = buildLabel(
+                "lblNewUser",
+                "",
+                null,
+                new Bounds(327, 40, 153, 146)
+        );
 
-        JLabel lblName = new JLabel("Name");
-        lblName.setFont(new Font("Calibri", Font.BOLD, 14));
-        lblName.setBounds(39, 73, 66, 24);
-        contentPane.add(lblName);
+        lblNewUser.setIcon(new ImageIcon(this.getClass().getResource("/newUser.png")));
 
-        JLabel lblLastName = new JLabel("Last name");
-        lblLastName.setFont(new Font("Calibri", Font.BOLD, 14));
-        lblLastName.setBounds(39, 108, 66, 24);
-        contentPane.add(lblLastName);
+        buildLabel(
+                "lblCreateANew",
+                "Create a new account",
+                new Font("Calibri", Font.BOLD, 18),
+                new Bounds(118, 11, 186, 59)
+        );
 
-        JLabel lblEmail = new JLabel("Email");
-        lblEmail.setFont(new Font("Calibri", Font.BOLD, 14));
-        lblEmail.setBounds(39, 143, 66, 24);
-        contentPane.add(lblEmail);
+        buildLabel(
+                "lblName",
+                "Name",
+                new Font("Calibri", Font.BOLD, 14),
+                new Bounds(39, 73, 66, 24)
+        );
 
+        buildLabel(
+                "lblLastName",
+                "Last name",
+                new Font("Calibri", Font.BOLD, 14),
+                new Bounds(39, 108, 66, 24)
+        );
 
-        JLabel lblUsername = new JLabel("Username");
-        lblUsername.setFont(new Font("Calibri", Font.BOLD, 14));
-        lblUsername.setBounds(39, 178, 66, 24);
-        contentPane.add(lblUsername);
+        buildLabel(
+                "lblEmail",
+                "Email",
+                new Font("Calibri", Font.BOLD, 14),
+                new Bounds(39, 143, 66, 24)
+        );
 
-        JLabel lblPassword = new JLabel("Password");
-        lblPassword.setFont(new Font("Calibri", Font.BOLD, 14));
-        lblPassword.setBounds(39, 213, 66, 24);
-        contentPane.add(lblPassword);
+        buildLabel(
+                "lblUserName",
+                "Username",
+                new Font("Calibri", Font.BOLD, 14),
+                new Bounds(39, 178, 66, 24)
+        );
 
-        JLabel lblConfirmPassword = new JLabel("Confirm Password");
-        lblConfirmPassword.setFont(new Font("Calibri", Font.BOLD, 14));
-        lblConfirmPassword.setBounds(39, 248, 115, 38);
-        contentPane.add(lblConfirmPassword);
+        buildLabel(
+                "lblPassword",
+                "Password",
+                new Font("Calibri", Font.BOLD, 14),
+                new Bounds(39, 213, 66, 24)
+        );
 
-        txtName = new JTextField();
-        txtName.setBounds(163, 75, 115, 20);
-        contentPane.add(txtName);
-        txtName.setColumns(10);
+        buildLabel(
+                "lblConfirmPassword",
+                "Confirm Password",
+                new Font("Calibri", Font.BOLD, 14),
+                new Bounds(39, 248, 115, 38)
+        );
 
-        txtLastName = new JTextField();
-        txtLastName.setColumns(10);
-        txtLastName.setBounds(163, 110, 115, 20);
-        contentPane.add(txtLastName);
+        txtFirstName = buildTextField("txtFirstName", new Bounds(163, 75, 115, 20));
+        txtLastName = buildTextField("txtLastName", new Bounds(163, 110, 115, 20));
+        txtEmail = buildTextField("txtEmail", new Bounds(163, 145, 115, 20));
+        txtUsername = buildTextField("txtUsername", new Bounds(163, 180, 115, 20));
+        txtPassword = buildPasswordField("txtPassword", new Bounds(163, 213, 115, 22));
+        txtConfirmPassword = buildPasswordField("txtConfirmPassword", new Bounds(164, 257, 115, 22));
+        buildButton("btnNewAccount", "Create", new Bounds(37, 309, 108, 38), createAccountActionListener());
+    }
 
-        txtEmail = new JTextField();
-        txtEmail.setColumns(10);
-        txtEmail.setBounds(163, 145, 115, 20);
-        contentPane.add(txtEmail);
+    private void configureJFrameOptions() {
+        this.setName("newAccountFrame");
+        this.setBounds(100, 100, 424, 329);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        this.getContentPane().setLayout(null);
+    }
 
-        txtUsername = new JTextField();
-        txtUsername.setColumns(10);
-        txtUsername.setBounds(163, 180, 115, 20);
-        contentPane.add(txtUsername);
+    private JLabel buildLabel(String id, String text, Font font, Bounds bounds) {
+        JLabel lblNewLabel = new JLabel(text);
+        lblNewLabel.setName(id);
+        lblNewLabel.setFont(font);
+        lblNewLabel.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
+        this.getContentPane().add(lblNewLabel);
+        return lblNewLabel;
+    }
 
-        JLabel lblNewUser = new JLabel("");
-        Image imageNewUser = new ImageIcon(this.getClass().getResource("/newUser.png")).getImage();
-        lblNewUser.setIcon(new ImageIcon(imageNewUser));
-        lblNewUser.setBounds(327, 40, 153, 146);
-        contentPane.add(lblNewUser);
+    private JTextField buildTextField(String id, Bounds bounds) {
+        JTextField newTextField = new JTextField();
+        newTextField.setName(id);
+        newTextField.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
+        this.getContentPane().add(newTextField);
+        newTextField.setColumns(10);
+        return newTextField;
+    }
 
-        txtPassword = new JPasswordField();
-        txtPassword.setName("txtPassword");
-        txtPassword.setBounds(163, 213, 115, 22);
-        contentPane.add(txtPassword);
+    private JPasswordField buildPasswordField(String id, Bounds bounds) {
+        JPasswordField newTextField = new JPasswordField();
+        newTextField.setName(id);
+        newTextField.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
+        this.getContentPane().add(newTextField);
+        newTextField.setColumns(10);
+        return newTextField;
+    }
 
-        txtConfirmPassword = new JPasswordField();
-        txtConfirmPassword.setName("txtConfirmPassword");
-        txtConfirmPassword.setBounds(164, 257, 115, 22);
-        contentPane.add(txtConfirmPassword);
-
-        JButton btnNewButton = new JButton("Create");
-        btnNewButton.addActionListener(createAccountActionListener());
-        btnNewButton.setFont(new Font("Calibri", Font.BOLD, 14));
-        btnNewButton.setBounds(37, 309, 108, 38);
-        btnNewButton.setName("btnNewButton");
-        contentPane.add(btnNewButton);
+    private void buildButton(String id, String text, Bounds bounds, ActionListener actionListener) {
+        JButton newButton = new JButton(text);
+        newButton.setName(id);
+        newButton.setFont(new Font("Tahoma", Font.BOLD, 12));
+        newButton.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
+        newButton.addActionListener(actionListener);
+        this.getContentPane().add(newButton);
     }
 
     private ActionListener createAccountActionListener() {
         return actionEvent -> {
             try {
-                if (!txtPassword.getText().equals(txtConfirmPassword.getText())) { // not same, try again
+                UserAccount userAccount = new UserAccount(txtFirstName.getText(), txtLastName.getText(), txtEmail.getText(), txtUsername.getText(), txtPassword.getText(), txtConfirmPassword.getText());
+
+                if (!userAccount.getPassword().equals(userAccount.getConfirmPassword())) { // not same, try again
                     throw new ValidationException("Passwords must be same to be confirmed. Please try again.");
                 }
 
-                if (isUsernameTaken()) {
+                if (isUsernameTaken(userAccount.getUsername())) {
                     throw new ValidationException("This username is already being used. Please select another username.");
                 }
 
-                insertNewAccountIntoDatabase();
 
-                createUserWatchlistTable();
+                insertNewAccountIntoDatabase(userAccount);
+
+                createUserWatchlistTable(userAccount.getUsername());
 
                 JOptionPane.showMessageDialog(null, "New User Created!");
                 destroy();
@@ -151,11 +175,11 @@ public class NewAccountWindow extends JFrame {
         };
     }
 
-    public boolean isUsernameTaken() throws SQLException {
+    public boolean isUsernameTaken(String username) throws SQLException {
         boolean isUsernameTaken = false;
         String query = "select * from PortfolioLogins where username=?";
         PreparedStatement pst = connection.prepareStatement(query);
-        pst.setString(1, txtUsername.getText());
+        pst.setString(1, username);
         ResultSet r1 = pst.executeQuery();
         if (r1.next()) {
             isUsernameTaken = true;
@@ -165,26 +189,26 @@ public class NewAccountWindow extends JFrame {
         return isUsernameTaken;
     }
 
-    public void insertNewAccountIntoDatabase() throws SQLException {
+    public void insertNewAccountIntoDatabase(UserAccount userAccount) throws SQLException {
         // if no errors, enter new account into database
         String query2 = "insert into PortfolioLogins (Name, Surname, Email, Username, Password, Confirm) values (?, ?, ?, ?, ?, ?)";
         PreparedStatement pst2 = connection.prepareStatement(query2);
-        pst2.setString(1, txtName.getText());
-        pst2.setString(2, txtLastName.getText());
-        pst2.setString(3, txtEmail.getText());
-        pst2.setString(4, txtUsername.getText());
-        pst2.setString(5, txtPassword.getText());
-        pst2.setString(6, txtConfirmPassword.getText());
+        pst2.setString(1, userAccount.getFirstName());
+        pst2.setString(2, userAccount.getLastName());
+        pst2.setString(3, userAccount.getEmail());
+        pst2.setString(4, userAccount.getUsername());
+        pst2.setString(5, userAccount.getPassword());
+        pst2.setString(6, userAccount.getConfirmPassword());
         pst2.execute();
         pst2.close();
     }
 
-    public void createUserWatchlistTable() throws SQLException {
+    public void createUserWatchlistTable(String username) throws SQLException {
         //-------------------------------------------------------
         // Create unique User Watchlist table
         Statement stmt = connection.createStatement();
         // Create unique User Watchlist table
-        String tableName = txtUsername.getText() + "WatchList";
+        String tableName = username + "WatchList";
         String create = "CREATE TABLE IF NOT EXISTS " + tableName + "(symbol varchar(10) PRIMARY KEY UNIQUE)";
         stmt.execute(create);
         stmt.close();
@@ -197,5 +221,4 @@ public class NewAccountWindow extends JFrame {
     public JFrame getNewAccountFrame() {
         return this;
     }
-
 }

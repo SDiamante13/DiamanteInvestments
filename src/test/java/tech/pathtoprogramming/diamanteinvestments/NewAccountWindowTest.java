@@ -36,10 +36,10 @@ public class NewAccountWindowTest extends AssertJSwingJUnitTestCase {
         when(mockConnection.createStatement()).thenReturn(mockStatement);
         when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
         
-        window.button("btnNewButton").click();
+        window.button("btnNewAccount").click();
         JOptionPaneFixture optionPane = JOptionPaneFinder.findOptionPane().withTimeout(10000).using(robot());
         optionPane.button("OptionPane.button").click();
-        
+
         optionPane.requireMessage("New User Created!");
         window.requireNotVisible();
     }
@@ -52,7 +52,7 @@ public class NewAccountWindowTest extends AssertJSwingJUnitTestCase {
 
         window.textBox("txtPassword").enterText("pianoman");
         window.textBox("txtConfirmPassword").enterText("diffPass13");
-        window.button("btnNewButton").click();
+        window.button("btnNewAccount").click();
 
         JOptionPaneFixture optionPane = JOptionPaneFinder.findOptionPane().withTimeout(10000).using(robot());
         optionPane.requireMessage("Passwords must be same to be confirmed. Please try again.");
@@ -68,7 +68,7 @@ public class NewAccountWindowTest extends AssertJSwingJUnitTestCase {
         when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
         when(mockResultSet.next()).thenReturn(true);
 
-        window.button("btnNewButton").click();
+        window.button("btnNewAccount").click();
 
         JOptionPaneFixture optionPane = JOptionPaneFinder.findOptionPane().withTimeout(10000).using(robot());
         optionPane.requireMessage("This username is already being used. Please select another username.");
@@ -82,7 +82,7 @@ public class NewAccountWindowTest extends AssertJSwingJUnitTestCase {
         when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
         when(mockPreparedStatement.execute()).thenThrow(new SQLException("Connection error occurred"));
 
-        window.button("btnNewButton").click();
+        window.button("btnNewAccount").click();
 
         JOptionPaneFixture optionPane = JOptionPaneFinder.findOptionPane().withTimeout(10000).using(robot());
         optionPane.requireMessage("Connection error occurred");
