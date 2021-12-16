@@ -16,12 +16,21 @@ public class NewAccountWindow extends JFrame {
 
     private final Connection connection;
 
+    private JLabel lblNewUser;
+    private JLabel lblCreateANew;
+    private JLabel lblFirstName;
+    private JLabel lblLastName;
+    private JLabel lblEmail;
+    private JLabel lblUserName;
+    private JLabel lblPassword;
+    private JLabel lblConfirmPassword;
     private JTextField txtFirstName;
     private JTextField txtLastName;
     private JTextField txtEmail;
     private JTextField txtUsername;
     private JPasswordField txtPassword;
     private JPasswordField txtConfirmPassword;
+    private JButton newAccountButton;
 
     public NewAccountWindow(Connection connection) {
         this.connection = connection;
@@ -30,122 +39,101 @@ public class NewAccountWindow extends JFrame {
 
     private void initialize() {
         configureJFrameOptions();
+        createLabels();
+        createTextFields();
 
+        newAccountButton = UICreator.createButton("btnNewAccount", "Create", new Bounds(37, 309, 108, 38), createAccountActionListener());
+
+        UICreator.addAllToContentPane(
+                this.getContentPane(),
+                lblNewUser,
+                lblCreateANew,
+                lblFirstName,
+                lblLastName,
+                lblEmail,
+                lblUserName,
+                lblPassword,
+                lblConfirmPassword,
+                txtFirstName,
+                txtLastName,
+                txtEmail,
+                txtUsername,
+                txtPassword,
+                txtConfirmPassword,
+                newAccountButton
+        );
+    }
+
+    private void configureJFrameOptions() {
+        this.setName("newAccountFrame");
         this.setBounds(100, 100, 524, 413);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         JPanel contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         this.setContentPane(contentPane);
         contentPane.setLayout(null);
+    }
 
-        JLabel lblNewUser = buildLabel(
+    private void createLabels() {
+        lblNewUser = UICreator.createLabel(
                 "lblNewUser",
                 "",
                 null,
                 new Bounds(327, 40, 153, 146)
         );
-
         lblNewUser.setIcon(new ImageIcon(this.getClass().getResource("/newUser.png")));
-
-        buildLabel(
+        lblCreateANew = UICreator.createLabel(
                 "lblCreateANew",
                 "Create a new account",
                 new Font("Calibri", Font.BOLD, 18),
                 new Bounds(118, 11, 186, 59)
         );
-
-        buildLabel(
-                "lblName",
+        lblFirstName = UICreator.createLabel(
+                "lblFirstName",
                 "Name",
                 new Font("Calibri", Font.BOLD, 14),
                 new Bounds(39, 73, 66, 24)
         );
-
-        buildLabel(
+        lblLastName = UICreator.createLabel(
                 "lblLastName",
                 "Last name",
                 new Font("Calibri", Font.BOLD, 14),
                 new Bounds(39, 108, 66, 24)
         );
-
-        buildLabel(
+        lblEmail = UICreator.createLabel(
                 "lblEmail",
                 "Email",
                 new Font("Calibri", Font.BOLD, 14),
                 new Bounds(39, 143, 66, 24)
         );
-
-        buildLabel(
+        lblUserName = UICreator.createLabel(
                 "lblUserName",
                 "Username",
                 new Font("Calibri", Font.BOLD, 14),
                 new Bounds(39, 178, 66, 24)
         );
-
-        buildLabel(
+        lblPassword = UICreator.createLabel(
                 "lblPassword",
                 "Password",
                 new Font("Calibri", Font.BOLD, 14),
                 new Bounds(39, 213, 66, 24)
         );
-
-        buildLabel(
+        lblConfirmPassword = UICreator.createLabel(
                 "lblConfirmPassword",
                 "Confirm Password",
                 new Font("Calibri", Font.BOLD, 14),
                 new Bounds(39, 248, 115, 38)
         );
-
-        txtFirstName = buildTextField("txtFirstName", new Bounds(163, 75, 115, 20));
-        txtLastName = buildTextField("txtLastName", new Bounds(163, 110, 115, 20));
-        txtEmail = buildTextField("txtEmail", new Bounds(163, 145, 115, 20));
-        txtUsername = buildTextField("txtUsername", new Bounds(163, 180, 115, 20));
-        txtPassword = buildPasswordField("txtPassword", new Bounds(163, 213, 115, 22));
-        txtConfirmPassword = buildPasswordField("txtConfirmPassword", new Bounds(164, 257, 115, 22));
-        buildButton("btnNewAccount", "Create", new Bounds(37, 309, 108, 38), createAccountActionListener());
     }
 
-    private void configureJFrameOptions() {
-        this.setName("newAccountFrame");
-        this.setBounds(100, 100, 424, 329);
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        this.getContentPane().setLayout(null);
-    }
-
-    private JLabel buildLabel(String id, String text, Font font, Bounds bounds) {
-        JLabel lblNewLabel = new JLabel(text);
-        lblNewLabel.setName(id);
-        lblNewLabel.setFont(font);
-        lblNewLabel.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
-        this.getContentPane().add(lblNewLabel);
-        return lblNewLabel;
-    }
-
-    private JTextField buildTextField(String id, Bounds bounds) {
-        JTextField newTextField = new JTextField();
-        newTextField.setName(id);
-        newTextField.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
-        this.getContentPane().add(newTextField);
-        newTextField.setColumns(10);
-        return newTextField;
-    }
-
-    private JPasswordField buildPasswordField(String id, Bounds bounds) {
-        JPasswordField newTextField = new JPasswordField();
-        newTextField.setName(id);
-        newTextField.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
-        this.getContentPane().add(newTextField);
-        newTextField.setColumns(10);
-        return newTextField;
-    }
-
-    private void buildButton(String id, String text, Bounds bounds, ActionListener actionListener) {
-        JButton newButton = new JButton(text);
-        newButton.setName(id);
-        newButton.setFont(new Font("Tahoma", Font.BOLD, 12));
-        newButton.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
-        newButton.addActionListener(actionListener);
-        this.getContentPane().add(newButton);
+    private void createTextFields() {
+        txtFirstName = UICreator.createTextField("txtFirstName", new Bounds(163, 75, 115, 20));
+        txtLastName = UICreator.createTextField("txtLastName", new Bounds(163, 110, 115, 20));
+        txtEmail = UICreator.createTextField("txtEmail", new Bounds(163, 145, 115, 20));
+        txtUsername = UICreator.createTextField("txtUsername", new Bounds(163, 180, 115, 20));
+        txtPassword = UICreator.createPasswordField("txtPassword", new Bounds(163, 213, 115, 22));
+        txtConfirmPassword = UICreator.createPasswordField("txtConfirmPassword", new Bounds(164, 257, 115, 22));
     }
 
     private ActionListener createAccountActionListener() {

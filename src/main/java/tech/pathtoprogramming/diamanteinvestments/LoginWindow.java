@@ -16,7 +16,12 @@ public class LoginWindow extends JFrame {
 
     private JTextField txtUsername;
     private JPasswordField txtPassword;
-    private JLabel lblValidation;
+    private JLabel titleLabel;
+    private JLabel usernameLabel;
+    private JLabel passwordLabel;
+    private JLabel validationLabel;
+    private JButton loginButton;
+    private JButton createNewAccountButton;
 
     public LoginWindow(LoginRepository loginRepository) {
         this.loginRepository = loginRepository;
@@ -29,32 +34,21 @@ public class LoginWindow extends JFrame {
 
     private void initialize() {
         configureJFrameOptions();
+        createLabels();
+        createTextFields();
+        createButtons();
 
-        buildLabel(
-                "lblTitle",
-                "Diamante Investments",
-                new Font("Edwardian Script ITC", Font.BOLD, 30),
-                new Bounds(71, 23, 288, 57)
+        UICreator.addAllToContentPane(
+                this.getContentPane(),
+                titleLabel,
+                usernameLabel,
+                passwordLabel,
+                txtUsername,
+                txtPassword,
+                validationLabel,
+                loginButton,
+                createNewAccountButton
         );
-        buildLabel(
-                "lblUsername",
-                "Username",
-                new Font("Tahoma", Font.BOLD, 12),
-                new Bounds(71, 103, 64, 26)
-        );
-        buildLabel(
-                "lblPassword",
-                "Password",
-                new Font("Tahoma", Font.BOLD, 12),
-                new Bounds(71, 140, 64, 26)
-        );
-        buildTextField("txtUsername", new Bounds(145, 103, 96, 23));
-        buildPasswordField("txtPassword", new Bounds(145, 143, 96, 23));
-
-        buildValidationLabel();
-
-        buildButton("btnLogin", "Login", new Bounds(81, 192, 160, 26), loginActionListener());
-        buildButton("btnNewButton", "Create new account", new Bounds(81, 229, 160, 26), newAccountActionListener());
     }
 
     private void configureJFrameOptions() {
@@ -63,49 +57,43 @@ public class LoginWindow extends JFrame {
         this.getContentPane().setLayout(null);
     }
 
-    private JLabel buildLabel(String id, String text, Font font, Bounds bounds) {
-        JLabel lblNewLabel = new JLabel(text);
-        lblNewLabel.setName(id);
-        lblNewLabel.setFont(font);
-        lblNewLabel.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
-        this.getContentPane().add(lblNewLabel);
-        return lblNewLabel;
-    }
-
-    private void buildValidationLabel() {
-        lblValidation = buildLabel(
+    private void createLabels() {
+        titleLabel = UICreator.createLabel(
+                "lblTitle",
+                "Diamante Investments",
+                new Font("Edwardian Script ITC", Font.BOLD, 30),
+                new Bounds(71, 23, 288, 57)
+        );
+        usernameLabel = UICreator.createLabel(
+                "lblUsername",
+                "Username",
+                new Font("Tahoma", Font.BOLD, 12),
+                new Bounds(71, 103, 64, 26)
+        );
+        passwordLabel = UICreator.createLabel(
+                "lblPassword",
+                "Password",
+                new Font("Tahoma", Font.BOLD, 12),
+                new Bounds(71, 140, 64, 26)
+        );
+        validationLabel = UICreator.createLabel(
                 "lblValidation",
                 "",
                 new Font("Tahoma", Font.ITALIC, 10),
                 new Bounds(81, 166, 500, 26)
         );
-        lblValidation.setForeground(Color.RED);
-        lblValidation.setVisible(false);
+        validationLabel.setForeground(Color.RED);
+        validationLabel.setVisible(false);
     }
 
-    private void buildTextField(String id, Bounds bounds) {
-        txtUsername = new JTextField();
-        txtUsername.setName(id);
-        txtUsername.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
-        txtUsername.setColumns(10);
-        this.getContentPane().add(txtUsername);
+    private void createTextFields() {
+        txtUsername = UICreator.createTextField("txtUsername", new Bounds(145, 103, 96, 23));
+        txtPassword = UICreator.createPasswordField("txtPassword", new Bounds(145, 143, 96, 23));
     }
 
-    private void buildPasswordField(String id, Bounds bounds) {
-        txtPassword = new JPasswordField();
-        txtPassword.setName(id);
-        txtPassword.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        txtPassword.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
-        this.getContentPane().add(txtPassword);
-    }
-
-    private void buildButton(String id, String text, Bounds bounds, ActionListener actionListener) {
-        JButton btnLogin = new JButton(text);
-        btnLogin.setName(id);
-        btnLogin.setFont(new Font("Tahoma", Font.BOLD, 12));
-        btnLogin.setBounds(bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight());
-        btnLogin.addActionListener(actionListener);
-        this.getContentPane().add(btnLogin);
+    private void createButtons() {
+        loginButton = UICreator.createButton("btnLogin", "Login", new Bounds(81, 192, 160, 26), loginActionListener());
+        createNewAccountButton = UICreator.createButton("btnNewButton", "Create new account", new Bounds(81, 229, 160, 26), newAccountActionListener());
     }
 
     private ActionListener loginActionListener() {
@@ -131,6 +119,13 @@ public class LoginWindow extends JFrame {
         };
     }
 
+    private ActionListener newAccountActionListener() {
+        return actionEvent -> {
+            NewAccountWindow newUser = new NewAccountWindow(loginRepository.getConnection());
+            newUser.getNewAccountFrame().setVisible(true);
+        };
+    }
+
     private void launchStockForm() {
         StockForm stockWindow = new StockForm(loginRepository.getConnection(), txtUsername.getText().trim());
         stockWindow.setVisible(true);
@@ -139,8 +134,8 @@ public class LoginWindow extends JFrame {
     }
 
     private void displayValidationErrorLabel(String text) {
-        lblValidation.setVisible(true);
-        lblValidation.setText(text);
+        validationLabel.setVisible(true);
+        validationLabel.setText(text);
     }
 
     private boolean isValidInput() {
@@ -154,14 +149,7 @@ public class LoginWindow extends JFrame {
     private void clearScreen() {
         txtUsername.setText("");
         txtPassword.setText("");
-        lblValidation.setText("");
-        lblValidation.setVisible(false);
-    }
-
-    private ActionListener newAccountActionListener() {
-        return actionEvent -> {
-            NewAccountWindow newUser = new NewAccountWindow(loginRepository.getConnection());
-            newUser.getNewAccountFrame().setVisible(true);
-        };
+        validationLabel.setText("");
+        validationLabel.setVisible(false);
     }
 }
