@@ -1,5 +1,6 @@
 package tech.pathtoprogramming.diamanteinvestments;
 
+import lombok.extern.slf4j.Slf4j;
 import org.jfree.chart.*;
 import org.jfree.chart.axis.*;
 import org.jfree.chart.panel.CrosshairOverlay;
@@ -34,6 +35,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+@Slf4j
 public class StockForm extends JFrame implements ChartMouseListener {
 
     private JPanel contentPane;
@@ -132,6 +134,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
 
         // Stock Summary Panel (Search Button)
         btnSearchStock = new JButton("Search Stock");
+        btnSearchStock.setName("btnSearchStock");
         btnSearchStock.setFont(new Font("Calibri", Font.BOLD, 14));
         btnSearchStock.setBounds(585, 272, 166, 23);
         contentPane.add(btnSearchStock);
@@ -385,7 +388,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
                         retrieveStockStats(symbolList.get(0));
                     }
                 } catch (Exception e) {
-                    System.out.println(e);
+                    log.error("Error occurred: ", e);
                 }
 
 
@@ -414,7 +417,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
                         retrieveStockStats(symbolList.get(0));
                     }
                 } catch (Exception e) {
-                    System.out.println(e);
+                    log.error("Error occurred: ", e);
                 }
             }
         });
@@ -498,7 +501,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
                 symbolList.add(rs.getString(1));
             }
         } catch (Exception e) {
-            System.out.println(e);
+            log.error("Error occurred: ", e);
         }
     }
 
@@ -569,7 +572,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
             // set Summary/Chart Panel to visible
             tabbedPane.setVisible(true);
         } catch (Exception e) {
-            System.out.println(e);
+            log.error("Error occurred: ", e);
         }
     }
 
@@ -700,7 +703,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
             chartTab.add(chartPanel, BorderLayout.NORTH);
             chartTab.validate();
         } catch (Exception e) {
-            System.out.println(e);
+            log.error("Error occurred: ", e);
         }
     }
 
