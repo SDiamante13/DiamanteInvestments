@@ -1,6 +1,5 @@
 package tech.pathtoprogramming.diamanteinvestments;
 
-import lombok.extern.slf4j.Slf4j;
 import org.jfree.chart.*;
 import org.jfree.chart.axis.*;
 import org.jfree.chart.panel.CrosshairOverlay;
@@ -50,14 +49,12 @@ public class StockForm extends JFrame implements ChartMouseListener {
 
     Logger log = LoggerFactory.getLogger(StockForm.class);
 
-    JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);    /* Declaring this early so the Panel can be invisible if the user's watchlist is empty */
+    // Declaring this early so the Panel can be invisible if the user's watchlist is empty
+    JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
     DefaultTableModel model = new DefaultTableModel();
     ArrayList<String> symbolList = new ArrayList<>();
 
     // Chart items
-    private JFrame frame;
-
-    //private JPanel panel;
     private JPanel chartTab;
     private ChartPanel chartPanel;
     private JFreeChart chart;
@@ -67,19 +64,16 @@ public class StockForm extends JFrame implements ChartMouseListener {
 
 
     // Summary Pane: Labels
-
     JLabel lblStockSymbol = new JLabel("SYMB");
     JLabel lblChange = new JLabel("+0.00");
     JLabel lblChangePercent = new JLabel("0.00%");
     JLabel lblStockName = new JLabel("Stock Name");
-
     JLabel lblOpenSt = new JLabel("Open");
     JLabel lblCloseSt = new JLabel("Close");
     JLabel lblDaysRangeSt = new JLabel("Open");
     JLabel lblWeekRangeSt = new JLabel("Open");
     JLabel lblVolumeSt = new JLabel("Open");
     JLabel lblAvgVolumeSt = new JLabel("Open");
-
     JLabel lblMarketCapSt = new JLabel("Market Cap");
     JLabel lblPeRatioSt = new JLabel("P/E Ratio");
     JLabel lblEpsSt = new JLabel("EPS");
@@ -90,19 +84,6 @@ public class StockForm extends JFrame implements ChartMouseListener {
 
     Connection connection = null;
 
-    /**
-     * Create the frame.
-     */
-    public StockForm() {
-        this("default");
-    }
-
-    // Constructor two
-    public StockForm(String username) {
-        super();
-        initialize(DBConnection.dbConnecter(), username);
-    }
-
     public StockForm(Connection connection, String username) {
         super();
         initialize(connection, username);
@@ -112,7 +93,6 @@ public class StockForm extends JFrame implements ChartMouseListener {
         usernameTable = username;
         this.connection = connection;
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
         this.setExtendedState(this.getExtendedState() | this.MAXIMIZED_BOTH);
         setBounds(100, 100, 1445, 763);
         contentPane = new JPanel();
@@ -161,23 +141,21 @@ public class StockForm extends JFrame implements ChartMouseListener {
         stockTable.setRowHeight(30);
         scrollPane.setViewportView(stockTable);
 
-        // Use this idea to display things in the Summary Pane
         ListSelectionModel listModel = stockTable.getSelectionModel();
-        listModel.addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                if (!listModel.isSelectionEmpty()) {
-                    // get selected row
-                    int selectedRow = listModel.getMinSelectionIndex();
-                    String stockSelection = model.getValueAt(selectedRow, 0).toString();
-                    if (stockSelection != lblStockSymbol.getText().toUpperCase()) { // if the selected stock is not already on the summary pane then write Data
-                        writeData(stockSelection);
-                    }
-                    // display chart
-                    clearPlot();
-                    createContent(stockSelection);
-                    contentPane.repaint();
-                    contentPane.revalidate();
+        listModel.addListSelectionListener(e -> {
+            if (!listModel.isSelectionEmpty()) {
+                // get selected row
+                int selectedRow = listModel.getMinSelectionIndex();
+                String stockSelection = model.getValueAt(selectedRow, 0).toString();
+                if (stockSelection != lblStockSymbol.getText().toUpperCase()) {
+                    // if the selected stock is not already on the summary pane then write Data
+                    writeData(stockSelection);
                 }
+                // display chart
+                clearPlot();
+                createContent(stockSelection);
+                contentPane.repaint();
+                contentPane.revalidate();
             }
         });
 
@@ -200,18 +178,16 @@ public class StockForm extends JFrame implements ChartMouseListener {
         btnUpdate.setBounds(150, 625, 159, 33);
         contentPane.add(btnUpdate);
 
-        btnUpdate.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                try {
-                    // reload table
-                    clearTable();
-                    loadTable(); // fill array list
-                    while (!symbolList.isEmpty()) {
-                        retrieveStockStats(symbolList.get(0));
-                    }
-                } catch (Exception e) {
-
+        btnUpdate.addActionListener(arg0 -> {
+            try {
+                // reload table
+                clearTable();
+                loadTable(); // fill array list
+                while (!symbolList.isEmpty()) {
+                    retrieveStockStats(symbolList.get(0));
                 }
+            } catch (Exception e) {
+
             }
         });
 
@@ -374,28 +350,26 @@ public class StockForm extends JFrame implements ChartMouseListener {
         summaryPanel.add(lblDayMovingSt);
 
         JButton btnAddStock = new JButton("");
-        btnAddStock.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                // add stock symbol lblStockSymbol to UsernameWatchList
-                try {
-                    String query = "insert into " + usernameTable + "WatchList (symbol) values (?)";
-                    PreparedStatement pst = connection.prepareStatement(query);
-                    pst.setString(1, lblStockSymbol.getText());
-                    pst.execute();
-                    JOptionPane.showMessageDialog(null, "Stock added to your watchlist");
-                    pst.close();
-                    // reload table
-                    clearTable();
-                    loadTable(); // fill array list
-                    while (!symbolList.isEmpty()) {
-                        retrieveStockStats(symbolList.get(0));
-                    }
-                } catch (Exception e) {
-                    log.error("Error occurred: ", e);
+        btnAddStock.addActionListener(arg0 -> {
+            // add stock symbol lblStockSymbol to UsernameWatchList
+            try {
+                String query = "insert into " + usernameTable + "WatchList (symbol) values (?)";
+                PreparedStatement pst = connection.prepareStatement(query);
+                pst.setString(1, lblStockSymbol.getText());
+                pst.execute();
+                JOptionPane.showMessageDialog(null, "Stock added to your watchlist");
+                pst.close();
+                // reload table
+                clearTable();
+                loadTable(); // fill array list
+                while (!symbolList.isEmpty()) {
+                    retrieveStockStats(symbolList.get(0));
                 }
-
-
+            } catch (Exception e) {
+                log.error("Error occurred: ", e);
             }
+
+
         });
         Image imageAdd = new ImageIcon(this.getClass().getResource("/add-icon.png")).getImage();
         btnAddStock.setIcon(new ImageIcon(imageAdd));
@@ -403,25 +377,23 @@ public class StockForm extends JFrame implements ChartMouseListener {
         summaryPanel.add(btnAddStock);
 
         JButton btnRemoveStock = new JButton("");
-        btnRemoveStock.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                // remove stock symbol lblStockSymbol from UsernameWatchList
-                try {
-                    String query = "delete from " + usernameTable + "WatchList where symbol= '" + lblStockSymbol.getText() + "'  ";
-                    PreparedStatement pst = connection.prepareStatement(query);
-                    pst.execute();
-                    JOptionPane.showMessageDialog(null, "Stock removed from your watchlist");
-                    pst.close();
+        btnRemoveStock.addActionListener(arg0 -> {
+            // remove stock symbol lblStockSymbol from UsernameWatchList
+            try {
+                String query = "delete from " + usernameTable + "WatchList where symbol= '" + lblStockSymbol.getText() + "'  ";
+                PreparedStatement pst = connection.prepareStatement(query);
+                pst.execute();
+                JOptionPane.showMessageDialog(null, "Stock removed from your watchlist");
+                pst.close();
 
-                    // reload table
-                    clearTable();
-                    loadTable(); // fill array list
-                    while (!symbolList.isEmpty()) {
-                        retrieveStockStats(symbolList.get(0));
-                    }
-                } catch (Exception e) {
-                    log.error("Error occurred: ", e);
+                // reload table
+                clearTable();
+                loadTable(); // fill array list
+                while (!symbolList.isEmpty()) {
+                    retrieveStockStats(symbolList.get(0));
                 }
+            } catch (Exception e) {
+                log.error("Error occurred: ", e);
             }
         });
         Image imageRemove = new ImageIcon(this.getClass().getResource("/remove-icon.png")).getImage();
@@ -437,24 +409,18 @@ public class StockForm extends JFrame implements ChartMouseListener {
         chartTab.setLayout(new BorderLayout());
 
         // The chart is displayed when the tab is changed to the chart panel
-        tabbedPane.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                createContent(lblStockSymbol.getText());
-            }
-        });
+        tabbedPane.addChangeListener(e -> createContent(lblStockSymbol.getText()));
 
         JPanel SelectionPanel = new JPanel();
         chartTab.add(SelectionPanel, BorderLayout.SOUTH);
         SelectionPanel.setLayout(new GridLayout(0, 1, 0, 10));
 
         JButton btnDetach = new JButton("Open in new window");
-        btnDetach.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                CandleStick cs = new CandleStick(lblStockSymbol.getText());
-                cs.setTitle("Diamante Investments - Candlestick Chart");
-                cs.setVisible(true);
+        btnDetach.addActionListener(arg0 -> {
+            CandleStick cs = new CandleStick(lblStockSymbol.getText());
+            cs.setTitle("Diamante Investments - Candlestick Chart");
+            cs.setVisible(true);
 
-            }
         });
         btnDetach.setFont(new Font("Calibri", Font.BOLD, 16));
         SelectionPanel.add(btnDetach);
@@ -476,9 +442,6 @@ public class StockForm extends JFrame implements ChartMouseListener {
         profilePanel.setBounds(1107, 40, 232, 100);
         contentPane.add(profilePanel);
         profilePanel.setLayout(null);
-        //Color customColor = new Color(255, 255, 204);
-        //profilePanel.setBackground(customColor);
-
 
         JLabel lblUserProfile = new JLabel("<html>" + usernameTable + "</html");
         lblUserProfile.setVerticalAlignment(SwingConstants.TOP);
@@ -571,8 +534,6 @@ public class StockForm extends JFrame implements ChartMouseListener {
                 lblStockPic.setVisible(true);
             }
 
-
-            // set Summary/Chart Panel to visible
             tabbedPane.setVisible(true);
         } catch (Exception e) {
             log.error("Error occurred: ", e);
@@ -580,20 +541,15 @@ public class StockForm extends JFrame implements ChartMouseListener {
     }
 
 
-    public String getUsernameTable() {
-        return usernameTable;
-    }
-
     // The following functions will aid in displaying the candlestick chart on to the chartPanel
-
     public void createContent(String symbol) {
         try {
-            /*Grab the stock data from the Alpha Vantage API*/
+            // Grab the stock data from the Alpha Vantage API
             StockChartData stockData = new StockChartData(StockChartData.TimeFrame.DAILY, symbol, StockChartData.Interval.FIFTEEN);
             final int size = stockData.getOpens().size();
             OHLCDataItem[] data = new OHLCDataItem[size];
             for (Date date : stockData.getDates()) {
-                date.setYear(date.getYear() - 1900); // edit years
+                date.setYear(date.getYear() - 1900);
                 date.setMonth(date.getMonth() - 1);
             }
             for (int i = 0; i < size; i++) {
@@ -602,7 +558,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
 
             CandlestickRenderer renderer = new CandlestickRenderer();
             DefaultOHLCDataset dataSet = new DefaultOHLCDataset(1, data);
-            chart = ChartFactory.createCandlestickChart(symbol, "Date", "Price", (OHLCDataset) dataSet, false);
+            chart = ChartFactory.createCandlestickChart(symbol, "Date", "Price", dataSet, false);
             plot = chart.getXYPlot();
             DateAxis domainAxis = (DateAxis) plot.getDomainAxis();
             NumberAxis rangeAxis = new NumberAxis();
@@ -612,7 +568,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
             SimpleDateFormat customDateFormat = new SimpleDateFormat("MMM");
             ;
             // Set dateFormat depending on TimeSeries
-            String dateFormat = "MMM-dd";
+            String dateFormat;
             ;
             if (stockData.getTimeFrame() == StockChartData.TimeFrame.MONTHLY) {
                 tickUnit = new DateTickUnit(DateTickUnit.MONTH, 9);
@@ -663,7 +619,8 @@ public class StockForm extends JFrame implements ChartMouseListener {
 
             // for intraday
             if (stockData.getTimeFrame() == StockChartData.TimeFrame.INTRADAY) {
-                SegmentedTimeline fifteenTimeline = SegmentedTimeline.newFifteenMinuteTimeline(); /* This sets the timeline as a Mon-Fri 9am-4pm timeframe*/
+                SegmentedTimeline fifteenTimeline = SegmentedTimeline.newFifteenMinuteTimeline();
+                // This sets the timeline as a Mon-Fri 9am-4pm timeframe
                 domainAxis.setTimeline(fifteenTimeline);
             } else {
                 // for all others
@@ -684,7 +641,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
             chart.setAntiAlias(false);
 
 
-            //Now create the chart and chart panel
+            // Now create the chart and chart panel
             plot.setRenderer(renderer);
 
             chartPanel = new ChartPanel(chart);
@@ -711,7 +668,6 @@ public class StockForm extends JFrame implements ChartMouseListener {
     }
 
     // The following functions will display an axis of the price
-
     @Override
     public void chartMouseClicked(ChartMouseEvent event) {
         // ignore
@@ -731,10 +687,8 @@ public class StockForm extends JFrame implements ChartMouseListener {
 
 
     // These functions will get the highest/lowest values of the prices
-
     protected double getLowestLow(DefaultOHLCDataset dataset) {
-        double lowest;
-        lowest = dataset.getLowValue(0, 0);
+        double lowest = dataset.getLowValue(0, 0);
         for (int i = 1; i < dataset.getItemCount(0); i++) {
             if (dataset.getLowValue(0, i) < lowest) {
                 lowest = dataset.getLowValue(0, i);
@@ -745,8 +699,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
     }
 
     protected double getHighestHigh(DefaultOHLCDataset dataset) {
-        double highest;
-        highest = dataset.getHighValue(0, 0);
+        double highest = dataset.getHighValue(0, 0);
         for (int i = 1; i < dataset.getItemCount(0); i++) {
             if (dataset.getLowValue(0, i) > highest) {
                 highest = dataset.getHighValue(0, i);
@@ -759,7 +712,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
         Component[] components = contentPane.getComponents();
         for (Component component : components) {
             if (component instanceof ChartPanel) {
-                //Remove the chart Panel
+                // Remove the chart Panel
                 contentPane.remove(component);
                 contentPane.repaint();
                 contentPane.revalidate();
