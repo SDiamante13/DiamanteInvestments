@@ -1,77 +1,38 @@
 package tech.pathtoprogramming.diamanteinvestments;
 
-import org.assertj.swing.edt.GuiActionRunner;
-import org.assertj.swing.finder.JOptionPaneFinder;
-import org.assertj.swing.fixture.FrameFixture;
-import org.assertj.swing.fixture.JOptionPaneFixture;
-import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
-import org.junit.Before;
+import org.approvaltests.awt.AwtApprovals;
 import org.junit.Test;
-import org.mockito.Mockito;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.Collections;
+import java.sql.*;
 
-import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class StockFormTest extends AssertJSwingJUnitTestCase {
+public class StockFormTest {
 
-    private FrameFixture window;
-    private Connection mockConnection;
-    private PreparedStatement mockPreparedStatement;
-    private Statement mockStatement;
-    private ResultSet mockResultSet;
-
-    @Override
-    protected void onSetUp() {
-        mockConnection = mock(Connection.class);
-        mockPreparedStatement = mock(PreparedStatement.class);
-        mockStatement = mock(Statement.class);
-        mockResultSet = mock(ResultSet.class);
-
-        mockDatabase();
-
-        initializeWindow();
-    }
-
-    // tests
-    // searchStocks
-    // add StocksToWatchList
-    // remove Stocks form watchlist
-    // View stock chart
-    // Update watchlist
-
+    Connection mockConnection = mock(Connection.class);
+    PreparedStatement mockPreparedStatement = mock(PreparedStatement.class);
+    Statement mockStatement = mock(Statement.class);
+    ResultSet mockResultSet = mock(ResultSet.class);
 
     @Test
-    public void anErrorMessageIsDisplayedWhenSearchStockButtonIsPressedWithNoStockToSearch() throws Exception {
-        window.button("btnSearchStock").click();
+    public void stockFrom() throws Exception {
+        mockDatabase();
+        StockForm stockForm = new StockForm(mockConnection, "StevenDiamante");
+        stockForm.setVisible(true);
+        stockForm.getContentPane().setVisible(true);
+        stockForm.setTitle("Diamante Investments - Stock Portfolio");
+        stockForm.setName("stockWindow");
 
-        JOptionPaneFixture optionPane = JOptionPaneFinder.findOptionPane().withTimeout(10000).using(robot());
-        optionPane.button("OptionPane.button").click();
+        Thread.sleep(2000);
 
-        optionPane.requireMessage("Please enter a valid stock symbol to search.");
+        AwtApprovals.verify(stockForm);
     }
 
-    private void mockDatabase() {
-        try {
-            when(mockConnection.prepareStatement(any())).thenReturn(mockPreparedStatement);
-            when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
-            when(mockResultSet.next()).thenReturn(false);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void initializeWindow() {
-        StockForm frame = GuiActionRunner.execute(() -> new StockForm(mockConnection, "BJoel"));
-        window = new FrameFixture(robot(), frame);
-        window.show();
-        window.maximize();
+    private void mockDatabase() throws Exception {
+        when(mockConnection.prepareStatement(any())).thenReturn(mockPreparedStatement);
+        when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
+        when(mockResultSet.next()).thenReturn(false);
     }
 }

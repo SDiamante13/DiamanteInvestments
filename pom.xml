@@ -93,5 +93,10 @@
             <artifactId>awaitility</artifactId>
             <version>4.2.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.approvaltests</groupId>
+            <artifactId>approvaltests</artifactId>
+            <version>18.5.0</version>
+        </dependency>
     </dependencies>
 </project>

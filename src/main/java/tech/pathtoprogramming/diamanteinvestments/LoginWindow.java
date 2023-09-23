@@ -100,6 +100,7 @@ public class LoginWindow extends JFrame {
     private ActionListener loginActionListener() {
         return actionEvent -> {
             try {
+                log.info("action event: " + actionEvent);
                 if (!isValidInput()) throw new ValidationException("Username and/or password is blank");
                 boolean userExists = loginRepository.doesUsernameExist(txtUsername.getText(), txtPassword.getPassword());
                 if (userExists) {

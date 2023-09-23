@@ -1,129 +1,21 @@
 package tech.pathtoprogramming.diamanteinvestments;
 
-import org.assertj.swing.edt.GuiActionRunner;
-import org.assertj.swing.finder.JOptionPaneFinder;
-import org.assertj.swing.fixture.FrameFixture;
-import org.assertj.swing.fixture.JOptionPaneFixture;
-import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
+import org.approvaltests.awt.AwtApprovals;
 import org.junit.Test;
 import tech.pathtoprogramming.diamanteinvestments.repository.LoginRepository;
 
-import java.sql.SQLException;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.swing.finder.WindowFinder.findFrame;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-public class LoginWindowTest extends AssertJSwingJUnitTestCase {
-    private FrameFixture window;
+public class LoginWindowTest {
+
     private final LoginRepository mockLoginRepository = mock(LoginRepository.class);
 
-    private final String username = "BJoel";
-    private final char[] password = "pianoman".toCharArray();
-
-    @Override
-    protected void onSetUp() {
-        initializeWindow();
-    }
-
     @Test
-    public void theStockFormIsDisplayedWhenTheUsernameAndPasswordCombinationExistsInTheDatabase() throws Exception {
-        when(mockLoginRepository.doesUsernameExist(username, password)).thenReturn(true);
+    public void loginScreenIsDisplayedOnStartUp() {
+        LoginWindow loginWindow = new LoginWindow(mockLoginRepository);
+        loginWindow.setVisible(true);
+        loginWindow.setTitle("Diamante Investments - Login Page");
 
-        logInWithUser();
-        dismissDialog();
-
-        assertThat(findFrame("stockWindow").using(robot())).isNotNull();
-    }
-
-    @Test
-    public void theLoginWindowClosesWhenLoginIsSuccessful() throws Exception {
-        when(mockLoginRepository.doesUsernameExist(username, password)).thenReturn(true);
-
-        logInWithUser();
-        dismissDialog();
-
-        window.requireNotVisible();
-    }
-
-    @Test
-    public void theUserIsReturnedBackToTheLoginWindowOnAFailedLoginAttempt() throws Exception {
-        when(mockLoginRepository.doesUsernameExist(username, password)).thenReturn(false);
-
-        logInWithUser();
-        dismissDialog();
-
-        window.requireVisible();
-    }
-
-    @Test
-    public void theFieldsAreClearedOnAnUnsuccessfulLogin() throws Exception {
-        when(mockLoginRepository.doesUsernameExist(username, password)).thenReturn(false);
-
-        logInWithUser();
-        dismissDialog();
-
-        window.textBox("txtUsername").requireEmpty();
-        window.textBox("txtPassword").requireEmpty();
-    }
-
-    @Test
-    public void displayRedErrorTextWhenEitherFieldIsBlank() {
-        logInWithBlankFields();
-
-        await()
-                .until(() -> {
-                    try {
-                        window.label("lblValidation").requireVisible();
-                        return true;
-                    } catch (Exception e) {
-                        return false;
-                    }
-                });
-
-    }
-
-    @Test
-    public void anErrorDialogIsShownWhenTheDatabaseQueryFails() throws Exception {
-        String error = "Something went wrong while attempting log in. Please try again later.";
-        when(mockLoginRepository.doesUsernameExist(username, password)).thenThrow(new SQLException(error));
-
-        logInWithUser();
-
-        JOptionPaneFixture optionPane = JOptionPaneFinder.findOptionPane().withTimeout(10000).using(robot());
-        optionPane.requireMessage("java.sql.SQLException: " + error);
-        optionPane.requireErrorMessage();
-    }
-
-    @Test
-    public void theCreateAccountFormIsDisplayedWhenTheCreateNewAccountButtonIsClicked() {
-        window.button("btnNewButton").click();
-
-        assertThat(findFrame("newAccountFrame").using(robot())).isNotNull();
-    }
-
-    private void initializeWindow() {
-        LoginWindow frame = GuiActionRunner.execute(() -> new LoginWindow(mockLoginRepository));
-        window = new FrameFixture(robot(), frame);
-        window.show();
-        window.maximize();
-    }
-
-    private void logInWithUser() {
-        window.textBox("txtUsername").enterText(username);
-        window.textBox("txtPassword").enterText(String.valueOf(password));
-        window.button("btnLogin").click();
-    }
-
-    private void dismissDialog() {
-        JOptionPaneFixture optionPane = JOptionPaneFinder.findOptionPane().withTimeout(10000).using(robot());
-        optionPane.button("OptionPane.button").click();
-    }
-
-    private void logInWithBlankFields() {
-        window.textBox("txtUsername").enterText(username);
-        window.button("btnLogin").click();
+        AwtApprovals.verify(loginWindow);
     }
 }

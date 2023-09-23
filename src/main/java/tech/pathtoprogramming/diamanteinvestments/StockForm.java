@@ -85,7 +85,6 @@ public class StockForm extends JFrame implements ChartMouseListener {
     Connection connection = null;
 
     public StockForm(Connection connection, String username) {
-        super();
         initialize(connection, username);
     }
 
