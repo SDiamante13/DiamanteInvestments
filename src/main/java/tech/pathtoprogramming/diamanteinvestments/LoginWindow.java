@@ -1,16 +1,17 @@
 package tech.pathtoprogramming.diamanteinvestments;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tech.pathtoprogramming.diamanteinvestments.model.Bounds;
 import tech.pathtoprogramming.diamanteinvestments.repository.LoginRepository;
 
 import javax.swing.*;
-import javax.xml.bind.ValidationException;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-@Slf4j
 public class LoginWindow extends JFrame {
+
+    Logger log = LoggerFactory.getLogger(LoginWindow.class);
 
     private final LoginRepository loginRepository;
 

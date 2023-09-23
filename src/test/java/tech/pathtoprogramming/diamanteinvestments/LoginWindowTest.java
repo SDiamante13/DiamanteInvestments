@@ -5,14 +5,10 @@ import org.assertj.swing.finder.JOptionPaneFinder;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.fixture.JOptionPaneFixture;
 import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
-import org.awaitility.Awaitility;
 import org.junit.Test;
-import sun.reflect.annotation.ExceptionProxy;
 import tech.pathtoprogramming.diamanteinvestments.repository.LoginRepository;
 
 import java.sql.SQLException;
-import java.time.Duration;
-import java.util.concurrent.Callable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.swing.finder.WindowFinder.findFrame;
@@ -82,7 +78,7 @@ public class LoginWindowTest extends AssertJSwingJUnitTestCase {
                     try {
                         window.label("lblValidation").requireVisible();
                         return true;
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         return false;
                     }
                 });

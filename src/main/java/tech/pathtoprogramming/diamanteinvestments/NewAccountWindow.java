@@ -1,18 +1,19 @@
 package tech.pathtoprogramming.diamanteinvestments;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tech.pathtoprogramming.diamanteinvestments.model.Bounds;
 import tech.pathtoprogramming.diamanteinvestments.model.UserAccount;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.xml.bind.ValidationException;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.sql.*;
 
-@Slf4j
 public class NewAccountWindow extends JFrame {
+
+    private Logger log = LoggerFactory.getLogger(NewAccountWindow.class);
 
     private final Connection connection;
 

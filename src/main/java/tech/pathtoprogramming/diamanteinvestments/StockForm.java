@@ -13,6 +13,8 @@ import org.jfree.data.xy.DefaultOHLCDataset;
 import org.jfree.data.xy.OHLCDataItem;
 import org.jfree.data.xy.OHLCDataset;
 import org.jfree.ui.RectangleEdge;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -35,7 +37,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-@Slf4j
 public class StockForm extends JFrame implements ChartMouseListener {
 
     private JPanel contentPane;
@@ -46,6 +47,8 @@ public class StockForm extends JFrame implements ChartMouseListener {
     private JScrollPane scrollPane;
     private JButton btnUpdate;
     private String usernameTable;
+
+    Logger log = LoggerFactory.getLogger(StockForm.class);
 
     JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);    /* Declaring this early so the Panel can be invisible if the user's watchlist is empty */
     DefaultTableModel model = new DefaultTableModel();
