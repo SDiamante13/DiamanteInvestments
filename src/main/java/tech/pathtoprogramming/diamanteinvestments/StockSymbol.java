@@ -211,19 +211,7 @@ public class StockSymbol {
                 floatShorted = line.substring(start + 1, deci + 3);
             }
 
-            //------------------------------------------
-            // Find the Average Volume
-            target = line.indexOf("Average Volume");
-            deci = line.indexOf(".", target);
-            start = deci;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            averageVolume = line.substring(start + 1, deci + 4); // increased length to get the B, M, or K
-            if (averageVolume.charAt(averageVolume.length() - 1) == '<') {
-                averageVolume = averageVolume.substring(0, averageVolume.length() - 1);
-            }
-
+            averageVolume = parseAverageVolume(line);
             volume = parseTodaysVolume(doc);
 
             callApi_calculate50DayAnd100DayMovingAverages_assignInstanceVariables(symbol);
@@ -231,6 +219,21 @@ public class StockSymbol {
             iconUrl = new URL("https://www.google.com/webhp");
         } catch (Exception e) {
             System.out.println(e);
+        }
+    }
+
+    private String parseAverageVolume(String line) {
+        int target = line.indexOf("Average Volume");
+        int deci = line.indexOf(".", target);
+        int start = deci;
+        while (line.charAt(start) != '>') {
+            start--;
+        }
+        String temp = line.substring(start + 1, deci + 4);
+        if (temp.charAt(temp.length() - 1) == '<') {
+            return temp.substring(0, temp.length() - 1);
+        } else {
+            return temp;
         }
     }
 
