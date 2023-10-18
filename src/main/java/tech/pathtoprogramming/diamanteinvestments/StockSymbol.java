@@ -38,28 +38,15 @@ public class StockSymbol {
         try {
             Document doc = Jsoup.connect("https://www.marketwatch.com/investing/stock/" + symbol).get();
 
-            //------------------------------------------
-            // Find the stock name
-            // h1> class = company__name
-            // use div# for id
-            Elements ele = doc.select("h1.company__name");
-            String line = ele.toString();
-            int target = line.indexOf("name");
-            int deci = line.indexOf(">", target);
-            int end = line.indexOf("<", deci);
-            if (line.isEmpty()) { // The stock symbol is invalid so end method
-                return;
-            }
-            String substring = line.substring(deci + 1, end);
-            stockName = substring;
-
+            stockName = parseStockName(doc);
             price = parsePrice(doc);
-
             change = parseChangeInDollars(doc);
             changePercent = parseChangeInPercentage(doc);
             close = parseClose(doc);
+            volume = parseTodaysVolume(doc);
+            iconUrl = new URL("https://www.google.com/webhp");
 
-            line = doc.select("li.kv__item").toString();
+            String line = doc.select("li.kv__item").toString();
             open = parseOpen(line);
             parseLowAndHigh_assignInstanceVariables(line);
             parseYearlyHighAndLow_assignInstanceVariables(line);
@@ -69,14 +56,21 @@ public class StockSymbol {
             floatShorted = parsePercentageFloatShorted(line);
             averageVolume = parseAverageVolume(line);
 
-            volume = parseTodaysVolume(doc);
-
             callApi_calculate50DayAnd100DayMovingAverages_assignInstanceVariables(symbol);
-
-            iconUrl = new URL("https://www.google.com/webhp");
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private String parseStockName(Document doc) {
+        String line = doc.select("h1.company__name").toString();
+        int target = line.indexOf("name");
+        int deci = line.indexOf(">", target);
+        int end = line.indexOf("<", deci);
+        if (line.isEmpty()) {
+            throw new IllegalArgumentException("The stock symbol is invalid");
+        }
+        return line.substring(deci + 1, end);
     }
 
     private String parsePrice(Document doc) {
