@@ -118,42 +118,9 @@ public class StockSymbol {
             }
             open = line.substring(start + 1, deci + 3);
 
+            parseLowAndHigh_assignInstanceVariables(line);
 
-            //------------------------------------------
-            // Find low and high of the stock
-            target = line.indexOf("Day Range");
-            deci = line.indexOf(".", target);
-            start = deci;
-            int index = deci + 1;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            low = line.substring(start + 1, deci + 3);
-            // Find the decimal of the high
-            index = line.indexOf(".", index);
-            int start2 = index;
-            while (line.charAt(start2) != '-') {
-                start2--;
-            }
-            high = line.substring(start2 + 1, index + 3);
-
-            //------------------------------------------
-            // Find 52 week low and high
-            target = line.indexOf("52 Week Range");
-            deci = line.indexOf(".", target);
-            start = deci;
-            index = deci + 1;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            yearlyLow = line.substring(start + 1, deci + 3);
-            // Find the decimal of the high
-            index = line.indexOf(".", index);
-            start2 = index;
-            while (line.charAt(start2) != '-') {
-                start2--;
-            }
-            yearlyHigh = line.substring(start2 + 1, index + 3);
+            parseYearlyHighAndLow_assignInstanceVariables(line);
 
             marketCap = parseMarketCap(line);
 
@@ -169,6 +136,54 @@ public class StockSymbol {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private void parseLowAndHigh_assignInstanceVariables(String line) {
+        int deci;
+        int start;
+        int target;
+        //------------------------------------------
+        // Find low and high of the stock
+        target = line.indexOf("Day Range");
+        deci = line.indexOf(".", target);
+        start = deci;
+        int index = deci + 1;
+        while (line.charAt(start) != '>') {
+            start--;
+        }
+        low = line.substring(start + 1, deci + 3);
+        // Find the decimal of the high
+        index = line.indexOf(".", index);
+        int start2 = index;
+        while (line.charAt(start2) != '-') {
+            start2--;
+        }
+        high = line.substring(start2 + 1, index + 3);
+    }
+
+    private void parseYearlyHighAndLow_assignInstanceVariables(String line) {
+        int index;
+        int start2;
+        int start;
+        int deci;
+        int target;
+        //------------------------------------------
+        // Find 52 week low and high
+        target = line.indexOf("52 Week Range");
+        deci = line.indexOf(".", target);
+        start = deci;
+        while (line.charAt(start) != '>') {
+            start--;
+        }
+        yearlyLow = line.substring(start + 1, deci + 3);
+        index = deci + 1;
+        // Find the decimal of the high
+        index = line.indexOf(".", index);
+        start2 = index;
+        while (line.charAt(start2) != '-') {
+            start2--;
+        }
+        yearlyHigh = line.substring(start2 + 1, index + 3);
     }
 
     private String parseMarketCap(String line) {
