@@ -50,84 +50,25 @@ public class StockSymbol {
             if (line.isEmpty()) { // The stock symbol is invalid so end method
                 return;
             }
-            stockName = line.substring(deci + 1, end);
+            String substring = line.substring(deci + 1, end);
+            stockName = substring;
 
-            //------------------------------------------
-            // Find current price of stock
-            // class = intraday_data
-            // use div# for id
-            ele = doc.select("div.intraday__data");
-            //change--point--q
-            line = ele.toString();
-            target = line.indexOf("lastsale");
-            deci = line.indexOf(".", target);
-            int start = deci;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            price = line.substring(start + 1, deci + 3);
+            price = parsePrice(doc);
 
-            //------------------------------------------ ERRORS HERE for when market is open
-            // Find change of stock today in $
-            // class = span.change--point--q
-            ele = doc.select("span.change--point--q");
-            line = ele.toString();
-            target = line.indexOf("after");
-            deci = line.indexOf(".", target);
-            start = deci;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            change = line.substring(start + 1, deci + 3).trim();
+            change = parseChangeInDollars(doc);
+            changePercent = parseChangeInPercentage(doc);
+            close = parseClose(doc);
 
-            //------------------------------------------
-            // Find change of stock today in %
-            // span class = change=--percent--q
-            ele = doc.select("span.change--percent--q");
-            line = ele.toString();
-            target = line.indexOf("after");
-            deci = line.indexOf(".", target);
-            start = deci;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            changePercent = line.substring(start + 1, deci + 3).trim();
-
-
-            //------------------------------------------
-            // Find close of the stock
-            ele = doc.select("tbody.remove-last-border");
-            line = ele.toString();
-            target = line.indexOf("semi");
-            deci = line.indexOf(".", target);
-            start = deci;
-            while (line.charAt(start) != '$') {
-                start--;
-            }
-            close = line.substring(start + 1, deci + 3);
-
-
-            //------------------------------------------
-            // Find open of the stock
-            ele = doc.select("li.kv__item");
-            line = ele.toString();
-            deci = line.indexOf(".");
-            start = deci;
-            while (line.charAt(start) != '$') {
-                start--;
-            }
-            open = line.substring(start + 1, deci + 3);
-
+            line = doc.select("li.kv__item").toString();
+            open = parseOpen(line);
             parseLowAndHigh_assignInstanceVariables(line);
-
             parseYearlyHighAndLow_assignInstanceVariables(line);
-
             marketCap = parseMarketCap(line);
-
             peRatio = parsePERatio(line);
             eps = parseEarningsPerShare(line);
             floatShorted = parsePercentageFloatShorted(line);
             averageVolume = parseAverageVolume(line);
+
             volume = parseTodaysVolume(doc);
 
             callApi_calculate50DayAnd100DayMovingAverages_assignInstanceVariables(symbol);
@@ -136,6 +77,61 @@ public class StockSymbol {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private String parsePrice(Document doc) {
+        String line = doc.select("div.intraday__data").toString();
+        int target = line.indexOf("lastsale");
+        int deci = line.indexOf(".", target);
+        int start = deci;
+        while (line.charAt(start) != '>') {
+            start--;
+        }
+        return line.substring(start + 1, deci + 3);
+    }
+
+    private String parseChangeInDollars(Document doc) {
+        String line = doc.select("span.change--point--q").toString();
+        int target = line.indexOf("after");
+        int deci = line.indexOf(".", target);
+        int start = deci;
+        while (line.charAt(start) != '>') {
+            start--;
+        }
+        return line.substring(start + 1, deci + 3).trim();
+    }
+
+    private String parseChangeInPercentage(Document doc) {
+        Elements ele = doc.select("span.change--percent--q");
+        String line = ele.toString();
+        int target = line.indexOf("after");
+        int deci = line.indexOf(".", target);
+        int start = deci;
+        while (line.charAt(start) != '>') {
+            start--;
+        }
+        return line.substring(start + 1, deci + 3).trim();
+    }
+
+    private String parseClose(Document doc) {
+        Elements ele = doc.select("tbody.remove-last-border");
+        String line = ele.toString();
+        int target = line.indexOf("semi");
+        int deci = line.indexOf(".", target);
+        int start = deci;
+        while (line.charAt(start) != '$') {
+            start--;
+        }
+        return line.substring(start + 1, deci + 3);
+    }
+
+    private String parseOpen(String line) {
+        int deci = line.indexOf(".");
+        int start = deci;
+        while (line.charAt(start) != '$') {
+            start--;
+        }
+        return line.substring(start + 1, deci + 3);
     }
 
     private void parseLowAndHigh_assignInstanceVariables(String line) {
