@@ -199,18 +199,7 @@ public class StockSymbol {
                 eps = line.substring(start + 1, deci + 3);
             }
 
-            //------------------------------------------
-            // Find the % of float shorted
-            target = line.indexOf("Float Shorted");
-            deci = line.indexOf(".", target);
-            start = deci;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            if ((deci - target) < 70) { // if N/A then keep float shorted as N/A
-                floatShorted = line.substring(start + 1, deci + 3);
-            }
-
+            floatShorted = parsePercentageFloatShorted(line);
             averageVolume = parseAverageVolume(line);
             volume = parseTodaysVolume(doc);
 
@@ -220,6 +209,19 @@ public class StockSymbol {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private String parsePercentageFloatShorted(String line) {
+        int target = line.indexOf("Float Shorted");
+        int deci = line.indexOf(".", target);
+        int start = deci;
+        while (line.charAt(start) != '>') {
+            start--;
+        }
+        if ((deci - target) < 70) {
+            return line.substring(start + 1, deci + 3);
+        }
+        return "N/A";
     }
 
     private String parseAverageVolume(String line) {
