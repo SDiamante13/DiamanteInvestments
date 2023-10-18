@@ -187,18 +187,7 @@ public class StockSymbol {
                 peRatio = line.substring(start + 1, deci + 3);
             }
 
-            //------------------------------------------
-            // Find the EPS (Earnings per Share)
-            target = line.indexOf("EPS");
-            deci = line.indexOf(".", target);
-            start = deci;
-            while (line.charAt(start) != '$') {
-                start--;
-            }
-            if ((deci - target) < 70) { // if N/A then keep EPS as N/A
-                eps = line.substring(start + 1, deci + 3);
-            }
-
+            eps = parseEarningsPerShare(line);
             floatShorted = parsePercentageFloatShorted(line);
             averageVolume = parseAverageVolume(line);
             volume = parseTodaysVolume(doc);
@@ -209,6 +198,19 @@ public class StockSymbol {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private String parseEarningsPerShare(String line) {
+        int target = line.indexOf("EPS");
+        int deci = line.indexOf(".", target);
+        int start = deci;
+        while (line.charAt(start) != '$') {
+            start--;
+        }
+        if ((deci - target) < 70) { // if N/A then keep EPS as N/A
+            return line.substring(start + 1, deci + 3);
+        }
+        return "N/A";
     }
 
     private String parsePercentageFloatShorted(String line) {
