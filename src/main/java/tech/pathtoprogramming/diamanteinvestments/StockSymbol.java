@@ -49,7 +49,8 @@ public class StockSymbol {
             String line = doc.select("li.kv__item").toString();
             open = parseOpen(line);
             parseLowAndHigh_assignInstanceVariables(line);
-            parseYearlyHighAndLow_assignInstanceVariables(line);
+            yearlyLow = parseYearlyLow(line);
+            yearlyHigh = parseYearlyHigh(line);
             marketCap = parseMarketCap(line);
             peRatio = parsePERatio(line);
             eps = parseEarningsPerShare(line);
@@ -64,7 +65,7 @@ public class StockSymbol {
 
     private String parseStockName(Document doc) {
         String line = doc.select("h1.company__name").toString();
-        int target = line.indexOf("name");
+        int target = getTarget(line, "name");
         int deci = line.indexOf(">", target);
         int end = line.indexOf("<", deci);
         if (line.isEmpty()) {
@@ -75,7 +76,7 @@ public class StockSymbol {
 
     private String parsePrice(Document doc) {
         String line = doc.select("div.intraday__data").toString();
-        int target = line.indexOf("lastsale");
+        int target = getTarget(line, "lastsale");
         int deci = line.indexOf(".", target);
         int start = deci;
         while (line.charAt(start) != '>') {
@@ -86,7 +87,7 @@ public class StockSymbol {
 
     private String parseChangeInDollars(Document doc) {
         String line = doc.select("span.change--point--q").toString();
-        int target = line.indexOf("after");
+        int target = getTarget(line, "after");
         int deci = line.indexOf(".", target);
         int start = deci;
         while (line.charAt(start) != '>') {
@@ -98,7 +99,7 @@ public class StockSymbol {
     private String parseChangeInPercentage(Document doc) {
         Elements ele = doc.select("span.change--percent--q");
         String line = ele.toString();
-        int target = line.indexOf("after");
+        int target = getTarget(line, "after");
         int deci = line.indexOf(".", target);
         int start = deci;
         while (line.charAt(start) != '>') {
@@ -110,7 +111,7 @@ public class StockSymbol {
     private String parseClose(Document doc) {
         Elements ele = doc.select("tbody.remove-last-border");
         String line = ele.toString();
-        int target = line.indexOf("semi");
+        int target = getTarget(line, "semi");
         int deci = line.indexOf(".", target);
         int start = deci;
         while (line.charAt(start) != '$') {
@@ -120,7 +121,7 @@ public class StockSymbol {
     }
 
     private String parseOpen(String line) {
-        int deci = line.indexOf(".");
+        int deci = getTarget(line, ".");
         int start = deci;
         while (line.charAt(start) != '$') {
             start--;
@@ -134,8 +135,8 @@ public class StockSymbol {
         int target;
         //------------------------------------------
         // Find low and high of the stock
-        target = line.indexOf("Day Range");
-        deci = line.indexOf(".", target);
+        target = getTarget(line, "Day Range");
+        deci = getDeci(line, target);
         start = deci;
         int index = deci + 1;
         while (line.charAt(start) != '>') {
@@ -143,7 +144,7 @@ public class StockSymbol {
         }
         low = line.substring(start + 1, deci + 3);
         // Find the decimal of the high
-        index = line.indexOf(".", index);
+        index = getDeci(line, index);
         int start2 = index;
         while (line.charAt(start2) != '-') {
             start2--;
@@ -151,33 +152,35 @@ public class StockSymbol {
         high = line.substring(start2 + 1, index + 3);
     }
 
-    private void parseYearlyHighAndLow_assignInstanceVariables(String line) {
-        int index;
-        int start2;
-        int start;
-        int deci;
-        int target;
-        //------------------------------------------
-        // Find 52 week low and high
-        target = line.indexOf("52 Week Range");
-        deci = line.indexOf(".", target);
-        start = deci;
+    private String parseYearlyLow(String line) {
+        int start = getDeci(line, getTarget(line, "52 Week Range"));
         while (line.charAt(start) != '>') {
             start--;
         }
-        yearlyLow = line.substring(start + 1, deci + 3);
-        index = deci + 1;
+        return line.substring(start + 1, getDeci(line, getTarget(line, "52 Week Range")) + 3);
+    }
+
+    private String parseYearlyHigh(String line) {
+        int index = getDeci(line, getTarget(line, "52 Week Range")) + 1;
         // Find the decimal of the high
-        index = line.indexOf(".", index);
-        start2 = index;
+        index = getDeci(line, index);
+        int start2 = index;
         while (line.charAt(start2) != '-') {
             start2--;
         }
-        yearlyHigh = line.substring(start2 + 1, index + 3);
+        return line.substring(start2 + 1, index + 3);
+    }
+
+    private int getTarget(String line, String title) {
+        return line.indexOf(title);
+    }
+
+    private int getDeci(String line, int target) {
+        return line.indexOf(".", target);
     }
 
     private String parseMarketCap(String line) {
-        int target = line.indexOf("Market Cap");
+        int target = getTarget(line, "Market Cap");
         int deci = line.indexOf(".", target);
         int start = deci;
         if (deci - target > 200) { // ETFs will show N/A
@@ -197,7 +200,7 @@ public class StockSymbol {
     }
 
     private String parsePERatio(String line) {
-        int target = line.indexOf("P/E Ratio");
+        int target = getTarget(line, "P/E Ratio");
         int deci = line.indexOf(".", target);
         int start = deci;
         while (line.charAt(start) != '>') {
@@ -210,7 +213,7 @@ public class StockSymbol {
     }
 
     private String parseEarningsPerShare(String line) {
-        int target = line.indexOf("EPS");
+        int target = getTarget(line, "EPS");
         int deci = line.indexOf(".", target);
         int start = deci;
         while (line.charAt(start) != '$') {
@@ -223,7 +226,7 @@ public class StockSymbol {
     }
 
     private String parsePercentageFloatShorted(String line) {
-        int target = line.indexOf("Float Shorted");
+        int target = getTarget(line, "Float Shorted");
         int deci = line.indexOf(".", target);
         int start = deci;
         while (line.charAt(start) != '>') {
@@ -236,7 +239,7 @@ public class StockSymbol {
     }
 
     private String parseAverageVolume(String line) {
-        int target = line.indexOf("Average Volume");
+        int target = getTarget(line, "Average Volume");
         int deci = line.indexOf(".", target);
         int start = deci;
         while (line.charAt(start) != '>') {
@@ -252,7 +255,7 @@ public class StockSymbol {
 
     private String parseTodaysVolume(Document doc) {
         String line = doc.select("div.range__header").toString();
-        int target = line.indexOf("Volume");
+        int target = getTarget(line, "Volume");
         int deci = line.indexOf(".", target);
         int start = deci;
         while (line.charAt(start) != '>') {
