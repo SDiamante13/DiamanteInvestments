@@ -224,17 +224,7 @@ public class StockSymbol {
                 averageVolume = averageVolume.substring(0, averageVolume.length() - 1);
             }
 
-            //------------------------------------------
-            // Find today's volume
-            ele = doc.select("div.range__header");
-            line = ele.toString();
-            target = line.indexOf("Volume");
-            deci = line.indexOf(".", target);
-            start = deci;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            volume = line.substring(start + 1, deci + 4); // increased length to get the B, M, or K
+            volume = parseTodaysVolume(doc);
 
             callApi_calculate50DayAnd100DayMovingAverages_assignInstanceVariables(symbol);
 
@@ -242,6 +232,17 @@ public class StockSymbol {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private String parseTodaysVolume(Document doc) {
+        String line = doc.select("div.range__header").toString();
+        int target = line.indexOf("Volume");
+        int deci = line.indexOf(".", target);
+        int start = deci;
+        while (line.charAt(start) != '>') {
+            start--;
+        }
+        return line.substring(start + 1, deci + 4);
     }
 
     private void callApi_calculate50DayAnd100DayMovingAverages_assignInstanceVariables(String symbol) throws IOException {
