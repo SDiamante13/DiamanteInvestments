@@ -4,6 +4,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.NumberFormat;
@@ -35,9 +36,7 @@ public class StockSymbol {
 
     public StockSymbol(String symbol) {
         try {
-
             Document doc = Jsoup.connect("https://www.marketwatch.com/investing/stock/" + symbol).get();
-
 
             //------------------------------------------
             // Find the stock name
@@ -67,7 +66,6 @@ public class StockSymbol {
                 start--;
             }
             price = line.substring(start + 1, deci + 3);
-
 
             //------------------------------------------ ERRORS HERE for when market is open
             // Find change of stock today in $
@@ -238,68 +236,69 @@ public class StockSymbol {
             }
             volume = line.substring(start + 1, deci + 4); // increased length to get the B, M, or K
 
-
-            //-------------------------------------------------------------------------------------
-            // Calculate 50 day and 100 day moving averages
-            String alphaUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY"
-                    + "&symbol=" + symbol
-                    + "&apikey=NKNKJCBRLYI9H5SO&datatype=csv";
-            URL alphaAdvantage = new URL(alphaUrl);
-            URLConnection data = alphaAdvantage.openConnection();
-            Scanner input = new Scanner(data.getInputStream());
-            if (input.hasNext()) { // skip header line
-                input.nextLine();
-            }
-            double[] closeValues = new double[100];
-            int x = 0;
-            int count = 0;
-            double sum50 = 0;
-            double sum100 = 0;
-            double fiftyAvg;
-            double hundredAvg;
-            int aTarget;
-            int aDeci;
-            int aStart;
-            String aClose;
-            while (input.hasNextLine()) {
-                String aLine = input.nextLine();
-                aTarget = aLine.lastIndexOf(",");
-                aDeci = aTarget - 5; // move target to the decimal point
-                aStart = aDeci;
-                while (aLine.charAt(aStart) != ',') {
-                    aStart--;
-                }
-                aClose = aLine.substring(aStart + 1, aDeci + 3);
-                closeValues[x] = Double.parseDouble(aClose); // convert String to int and store into array
-                x++;
-            }
-            for (double cV : closeValues) {
-                if (count < 50) {
-                    sum50 += cV;
-                } else {
-                    sum100 += cV;
-                }
-                count++;
-            }
-            fiftyAvg = sum50 / 50;
-            // trim to 2 decimal places
-            NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
-            String temp = currencyFormatter.format(fiftyAvg);
-            temp = temp.substring(1); // trim off $
-            fiftyDayMA = temp;
-            // trim to 2 decimal places
-            sum100 += sum50;
-            hundredAvg = sum100 / closeValues.length;
-            // trim to 2 decimal places
-            temp = currencyFormatter.format(hundredAvg);
-            temp = temp.substring(1); // trim off $
-            hundredDayMA = temp;
-            input.close();
+            callApi_calculate50DayAnd100DayMovingAverages_assignInstanceVariables(symbol);
 
             iconUrl = new URL("https://www.google.com/webhp");
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private void callApi_calculate50DayAnd100DayMovingAverages_assignInstanceVariables(String symbol) throws IOException {
+        String alphaUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY"
+                + "&symbol=" + symbol
+                + "&apikey=NKNKJCBRLYI9H5SO&datatype=csv";
+        URL alphaAdvantage = new URL(alphaUrl);
+        URLConnection data = alphaAdvantage.openConnection();
+        Scanner input = new Scanner(data.getInputStream());
+        if (input.hasNext()) { // skip header line
+            input.nextLine();
+        }
+        double[] closeValues = new double[100];
+        int x = 0;
+        int count = 0;
+        double sum50 = 0;
+        double sum100 = 0;
+        double fiftyAvg;
+        double hundredAvg;
+        int aTarget;
+        int aDeci;
+        int aStart;
+        String aClose;
+        while (input.hasNextLine()) {
+            String aLine = input.nextLine();
+            aTarget = aLine.lastIndexOf(",");
+            aDeci = aTarget - 5; // move target to the decimal point
+            aStart = aDeci;
+            while (aLine.charAt(aStart) != ',') {
+                aStart--;
+            }
+            aClose = aLine.substring(aStart + 1, aDeci + 3);
+            closeValues[x] = Double.parseDouble(aClose); // convert String to int and store into array
+            x++;
+        }
+        for (double cV : closeValues) {
+            if (count < 50) {
+                sum50 += cV;
+            } else {
+                sum100 += cV;
+            }
+            count++;
+        }
+        fiftyAvg = sum50 / 50;
+        // trim to 2 decimal places
+        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
+        String temp = currencyFormatter.format(fiftyAvg);
+        temp = temp.substring(1); // trim off $
+        fiftyDayMA = temp;
+        // trim to 2 decimal places
+        sum100 += sum50;
+        hundredAvg = sum100 / closeValues.length;
+        // trim to 2 decimal places
+        temp = currencyFormatter.format(hundredAvg);
+        temp = temp.substring(1); // trim off $
+        hundredDayMA = temp;
+        input.close();
     }
 
     public String getStockName() {
