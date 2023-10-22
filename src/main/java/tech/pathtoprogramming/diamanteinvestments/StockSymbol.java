@@ -4,6 +4,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.NumberFormat;
@@ -11,12 +12,7 @@ import java.util.Scanner;
 
 public class StockSymbol {
 
-    private String stockName = "not found";
-    private String price = "not found";
-    private String change = "not found";
-    private String changePercent = "not found";
-
-    private String close = "not found";
+    private CurrentStockData currentStockData;
     private String open = "not found";
     private String low = "not found";
     private String high = "not found";
@@ -26,11 +22,9 @@ public class StockSymbol {
     private String peRatio = "N/A";
     private String eps = "N/A";
     private String floatShorted = "N/A";
-    private String volume = "not found";
     private String averageVolume = "not found";
     private String fiftyDayMA = "not found";
     private String hundredDayMA = "not found";
-    private URL iconUrl;
 
 
     public StockSymbol(String symbol) {
@@ -43,13 +37,8 @@ public class StockSymbol {
             String changeInPercentageHtml = doc.select("span.change--percent--q").toString();
             String closeHtml = doc.select("tbody.remove-last-border").toString();
             String todaysVolumeHtml = doc.select("div.range__header").toString();
-            stockName = parseStockName(stockNameHtml);
-            price = parsePrice(priceHtml);
-            change = parseChangeInDollars(changeInDollarsHtml);
-            changePercent = parseChangeInPercentage(changeInPercentageHtml);
-            close = parseClose(closeHtml);
-            volume = parseTodaysVolume(todaysVolumeHtml);
-            iconUrl = new URL("https://www.google.com/webhp");
+            currentStockData = new CurrentStockData(stockNameHtml, priceHtml, changeInDollarsHtml,
+                    changeInPercentageHtml, closeHtml, todaysVolumeHtml);
 
             String line = doc.select("li.kv__item").toString();
             open = parseOpen(line);
@@ -71,56 +60,6 @@ public class StockSymbol {
         } catch (Exception e) {
             System.out.println(e);
         }
-    }
-
-    private String parseStockName(String stockNameHtml) {
-        int target = getTarget(stockNameHtml, "name");
-        int deci = stockNameHtml.indexOf(">", target);
-        int end = stockNameHtml.indexOf("<", deci);
-        if (stockNameHtml.isEmpty()) {
-            throw new IllegalArgumentException("The stock symbol is invalid");
-        }
-        return stockNameHtml.substring(deci + 1, end);
-    }
-
-    private String parsePrice(String priceHtml) {
-        int target = getTarget(priceHtml, "lastsale");
-        int deci = priceHtml.indexOf(".", target);
-        int start = deci;
-        while (priceHtml.charAt(start) != '>') {
-            start--;
-        }
-        return priceHtml.substring(start + 1, deci + 3);
-    }
-
-    private String parseChangeInDollars(String changeInDollarsHtml) {
-        int target = getTarget(changeInDollarsHtml, "after");
-        int deci = changeInDollarsHtml.indexOf(".", target);
-        int start = deci;
-        while (changeInDollarsHtml.charAt(start) != '>') {
-            start--;
-        }
-        return changeInDollarsHtml.substring(start + 1, deci + 3).trim();
-    }
-
-    private String parseChangeInPercentage(String changeInPercentageHtml) {
-        int target = getTarget(changeInPercentageHtml, "after");
-        int deci = changeInPercentageHtml.indexOf(".", target);
-        int start = deci;
-        while (changeInPercentageHtml.charAt(start) != '>') {
-            start--;
-        }
-        return changeInPercentageHtml.substring(start + 1, deci + 3).trim();
-    }
-
-    private String parseClose(String closeHtml) {
-        int target = getTarget(closeHtml, "semi");
-        int deci = closeHtml.indexOf(".", target);
-        int start = deci;
-        while (closeHtml.charAt(start) != '$') {
-            start--;
-        }
-        return closeHtml.substring(start + 1, deci + 3);
     }
 
     private String parseOpen(String line) {
@@ -251,16 +190,6 @@ public class StockSymbol {
         }
     }
 
-    private String parseTodaysVolume(String todaysVolumeHtml) {
-        int target = getTarget(todaysVolumeHtml, "Volume");
-        int deci = todaysVolumeHtml.indexOf(".", target);
-        int start = deci;
-        while (todaysVolumeHtml.charAt(start) != '>') {
-            start--;
-        }
-        return todaysVolumeHtml.substring(start + 1, deci + 4);
-    }
-
     private class CloseValueSums {
         public double sum50 = 0;
         public double sum100 = 0;
@@ -327,23 +256,23 @@ public class StockSymbol {
     }
 
     public String getStockName() {
-        return stockName;
+        return currentStockData.parseStockName();
     }
 
     public String getPrice() {
-        return price;
+        return currentStockData.parsePrice();
     }
 
     public String getChange() {
-        return change;
+        return currentStockData.parseChangeInDollars();
     }
 
     public String getChangePercent() {
-        return changePercent;
+        return currentStockData.parseChangeInPercentage();
     }
 
     public String getClose() {
-        return close;
+        return currentStockData.parseClose();
     }
 
     public String getOpen() {
@@ -384,7 +313,7 @@ public class StockSymbol {
 
 
     public String getVolume() {
-        return volume;
+        return currentStockData.parseTodaysVolume();
     }
 
 
@@ -402,7 +331,7 @@ public class StockSymbol {
         return hundredDayMA;
     }
 
-    public URL getIconUrl() {
-        return iconUrl;
+    public URL getIconUrl() throws MalformedURLException {
+        return new URL("https://www.google.com/webhp");
     }
 }
