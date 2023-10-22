@@ -39,13 +39,21 @@ class CurrentStockData {
     }
 
     public String parseChangeInDollars() {
-        int target = getTarget(changeInDollarsHtml, "after");
+        int target = getTargetDependingOnTag();
         int deci = changeInDollarsHtml.indexOf(".", target);
         int start = deci;
         while (changeInDollarsHtml.charAt(start) != '>') {
             start--;
         }
         return changeInDollarsHtml.substring(start + 1, deci + 3).trim();
+    }
+
+    private int getTargetDependingOnTag() {
+        boolean isDuringTradingHours = getTarget(changeInDollarsHtml, "after") == -1;
+        if (isDuringTradingHours) {
+            return getTarget(changeInDollarsHtml, "composite");
+        }
+        return getTarget(changeInDollarsHtml, "after");
     }
 
     public String parseChangeInPercentage() {
