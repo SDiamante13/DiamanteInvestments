@@ -58,7 +58,11 @@ public class StockSymbol {
             floatShorted = parsePercentageFloatShorted(line);
             averageVolume = parseAverageVolume(line);
 
-            callApi_calculate50DayAnd100DayMovingAverages_assignInstanceVariables(symbol);
+            double[] closeValues = callApi_parseCloseValues(symbol);
+            CloseValueSums closeValueSums = getCloseValueSums(closeValues);
+
+            fiftyDayMA = parseFiftyDayMovingAverage(closeValueSums);
+            hundredDayMA = parseHundredDayMovingAverage(closeValues, closeValueSums);
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -260,7 +264,12 @@ public class StockSymbol {
         return line.substring(start + 1, deci + 4);
     }
 
-    private void callApi_calculate50DayAnd100DayMovingAverages_assignInstanceVariables(String symbol) throws IOException {
+    private class CloseValueSums {
+        public double sum50 = 0;
+        public double sum100 = 0;
+    }
+
+    private double[] callApi_parseCloseValues(String symbol) throws IOException {
         String alphaUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY"
                 + "&symbol=" + symbol
                 + "&apikey=NKNKJCBRLYI9H5SO&datatype=csv";
@@ -272,49 +281,52 @@ public class StockSymbol {
         }
         double[] closeValues = new double[100];
         int x = 0;
-        int count = 0;
-        double sum50 = 0;
-        double sum100 = 0;
-        double fiftyAvg;
-        double hundredAvg;
-        int aTarget;
-        int aDeci;
-        int aStart;
-        String aClose;
         while (input.hasNextLine()) {
             String aLine = input.nextLine();
-            aTarget = aLine.lastIndexOf(",");
-            aDeci = aTarget - 5; // move target to the decimal point
-            aStart = aDeci;
+            int aTarget = aLine.lastIndexOf(",");
+            // move target to the decimal point
+            int aDeci = aTarget - 5;
+            int aStart = aDeci;
             while (aLine.charAt(aStart) != ',') {
                 aStart--;
             }
-            aClose = aLine.substring(aStart + 1, aDeci + 3);
+            String aClose = aLine.substring(aStart + 1, aDeci + 3);
             closeValues[x] = Double.parseDouble(aClose); // convert String to int and store into array
             x++;
         }
+        input.close();
+        return closeValues;
+    }
+
+    private CloseValueSums getCloseValueSums(double[] closeValues) {
+        CloseValueSums closeValueSums = new CloseValueSums();
+        int count = 0;
         for (double cV : closeValues) {
             if (count < 50) {
-                sum50 += cV;
+                closeValueSums.sum50 += cV;
             } else {
-                sum100 += cV;
+                closeValueSums.sum100 += cV;
             }
             count++;
         }
-        fiftyAvg = sum50 / 50;
-        // trim to 2 decimal places
-        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
-        String temp = currencyFormatter.format(fiftyAvg);
-        temp = temp.substring(1); // trim off $
-        fiftyDayMA = temp;
-        // trim to 2 decimal places
-        sum100 += sum50;
-        hundredAvg = sum100 / closeValues.length;
-        // trim to 2 decimal places
-        temp = currencyFormatter.format(hundredAvg);
-        temp = temp.substring(1); // trim off $
-        hundredDayMA = temp;
-        input.close();
+        return closeValueSums;
+    }
+
+    private String parseFiftyDayMovingAverage(CloseValueSums closeValueSums) {
+        double fiftyAvg = closeValueSums.sum50 / 50;
+        return trimToTwoDecimalPlaces(fiftyAvg);
+    }
+
+    private String parseHundredDayMovingAverage(double[] closeValues, CloseValueSums closeValueSums) {
+        closeValueSums.sum100 += closeValueSums.sum50;
+        double hundredAvg = closeValueSums.sum100 / closeValues.length;
+        return trimToTwoDecimalPlaces(hundredAvg);
+    }
+
+    private String trimToTwoDecimalPlaces(double hundredAvg) {
+        return NumberFormat.getCurrencyInstance()
+                .format(hundredAvg)
+                .substring(1);
     }
 
     public String getStockName() {
