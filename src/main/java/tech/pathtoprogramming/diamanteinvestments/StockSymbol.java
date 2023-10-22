@@ -2,7 +2,6 @@ package tech.pathtoprogramming.diamanteinvestments;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.URL;
@@ -38,12 +37,18 @@ public class StockSymbol {
         try {
             Document doc = Jsoup.connect("https://www.marketwatch.com/investing/stock/" + symbol).get();
 
-            stockName = parseStockName(doc);
-            price = parsePrice(doc);
-            change = parseChangeInDollars(doc);
-            changePercent = parseChangeInPercentage(doc);
-            close = parseClose(doc);
-            volume = parseTodaysVolume(doc);
+            String stockNameHtml = doc.select("h1.company__name").toString();
+            String priceHtml = doc.select("div.intraday__data").toString();
+            String changeInDollarsHtml = doc.select("span.change--point--q").toString();
+            String changeInPercentageHtml = doc.select("span.change--percent--q").toString();
+            String closeHtml = doc.select("tbody.remove-last-border").toString();
+            String todaysVolumeHtml = doc.select("div.range__header").toString();
+            stockName = parseStockName(stockNameHtml);
+            price = parsePrice(priceHtml);
+            change = parseChangeInDollars(changeInDollarsHtml);
+            changePercent = parseChangeInPercentage(changeInPercentageHtml);
+            close = parseClose(closeHtml);
+            volume = parseTodaysVolume(todaysVolumeHtml);
             iconUrl = new URL("https://www.google.com/webhp");
 
             String line = doc.select("li.kv__item").toString();
@@ -68,61 +73,54 @@ public class StockSymbol {
         }
     }
 
-    private String parseStockName(Document doc) {
-        String line = doc.select("h1.company__name").toString();
-        int target = getTarget(line, "name");
-        int deci = line.indexOf(">", target);
-        int end = line.indexOf("<", deci);
-        if (line.isEmpty()) {
+    private String parseStockName(String stockNameHtml) {
+        int target = getTarget(stockNameHtml, "name");
+        int deci = stockNameHtml.indexOf(">", target);
+        int end = stockNameHtml.indexOf("<", deci);
+        if (stockNameHtml.isEmpty()) {
             throw new IllegalArgumentException("The stock symbol is invalid");
         }
-        return line.substring(deci + 1, end);
+        return stockNameHtml.substring(deci + 1, end);
     }
 
-    private String parsePrice(Document doc) {
-        String line = doc.select("div.intraday__data").toString();
-        int target = getTarget(line, "lastsale");
-        int deci = line.indexOf(".", target);
+    private String parsePrice(String priceHtml) {
+        int target = getTarget(priceHtml, "lastsale");
+        int deci = priceHtml.indexOf(".", target);
         int start = deci;
-        while (line.charAt(start) != '>') {
+        while (priceHtml.charAt(start) != '>') {
             start--;
         }
-        return line.substring(start + 1, deci + 3);
+        return priceHtml.substring(start + 1, deci + 3);
     }
 
-    private String parseChangeInDollars(Document doc) {
-        String line = doc.select("span.change--point--q").toString();
-        int target = getTarget(line, "after");
-        int deci = line.indexOf(".", target);
+    private String parseChangeInDollars(String changeInDollarsHtml) {
+        int target = getTarget(changeInDollarsHtml, "after");
+        int deci = changeInDollarsHtml.indexOf(".", target);
         int start = deci;
-        while (line.charAt(start) != '>') {
+        while (changeInDollarsHtml.charAt(start) != '>') {
             start--;
         }
-        return line.substring(start + 1, deci + 3).trim();
+        return changeInDollarsHtml.substring(start + 1, deci + 3).trim();
     }
 
-    private String parseChangeInPercentage(Document doc) {
-        Elements ele = doc.select("span.change--percent--q");
-        String line = ele.toString();
-        int target = getTarget(line, "after");
-        int deci = line.indexOf(".", target);
+    private String parseChangeInPercentage(String changeInPercentageHtml) {
+        int target = getTarget(changeInPercentageHtml, "after");
+        int deci = changeInPercentageHtml.indexOf(".", target);
         int start = deci;
-        while (line.charAt(start) != '>') {
+        while (changeInPercentageHtml.charAt(start) != '>') {
             start--;
         }
-        return line.substring(start + 1, deci + 3).trim();
+        return changeInPercentageHtml.substring(start + 1, deci + 3).trim();
     }
 
-    private String parseClose(Document doc) {
-        Elements ele = doc.select("tbody.remove-last-border");
-        String line = ele.toString();
-        int target = getTarget(line, "semi");
-        int deci = line.indexOf(".", target);
+    private String parseClose(String closeHtml) {
+        int target = getTarget(closeHtml, "semi");
+        int deci = closeHtml.indexOf(".", target);
         int start = deci;
-        while (line.charAt(start) != '$') {
+        while (closeHtml.charAt(start) != '$') {
             start--;
         }
-        return line.substring(start + 1, deci + 3);
+        return closeHtml.substring(start + 1, deci + 3);
     }
 
     private String parseOpen(String line) {
@@ -253,15 +251,14 @@ public class StockSymbol {
         }
     }
 
-    private String parseTodaysVolume(Document doc) {
-        String line = doc.select("div.range__header").toString();
-        int target = getTarget(line, "Volume");
-        int deci = line.indexOf(".", target);
+    private String parseTodaysVolume(String todaysVolumeHtml) {
+        int target = getTarget(todaysVolumeHtml, "Volume");
+        int deci = todaysVolumeHtml.indexOf(".", target);
         int start = deci;
-        while (line.charAt(start) != '>') {
+        while (todaysVolumeHtml.charAt(start) != '>') {
             start--;
         }
-        return line.substring(start + 1, deci + 4);
+        return todaysVolumeHtml.substring(start + 1, deci + 4);
     }
 
     private class CloseValueSums {
