@@ -12,20 +12,10 @@ import java.util.Scanner;
 
 public class StockSymbol {
 
+    private HistoricalStockData historicalStockData;
     private CurrentStockData currentStockData;
-    private String open = "not found";
-    private String low = "not found";
-    private String high = "not found";
-    private String yearlyLow = "not found";
-    private String yearlyHigh = "not found";
-    private String marketCap = "N/A";
-    private String peRatio = "N/A";
-    private String eps = "N/A";
-    private String floatShorted = "N/A";
-    private String averageVolume = "not found";
     private String fiftyDayMA = "not found";
     private String hundredDayMA = "not found";
-
 
     public StockSymbol(String symbol) {
         try {
@@ -40,153 +30,15 @@ public class StockSymbol {
             currentStockData = new CurrentStockData(stockNameHtml, priceHtml, changeInDollarsHtml,
                     changeInPercentageHtml, closeHtml, todaysVolumeHtml);
 
-            String line = doc.select("li.kv__item").toString();
-            open = parseOpen(line);
-            low = parseLow(line);
-            high = parseHigh(line);
-            yearlyLow = parseYearlyLow(line);
-            yearlyHigh = parseYearlyHigh(line);
-            marketCap = parseMarketCap(line);
-            peRatio = parsePERatio(line);
-            eps = parseEarningsPerShare(line);
-            floatShorted = parsePercentageFloatShorted(line);
-            averageVolume = parseAverageVolume(line);
+            historicalStockData = new HistoricalStockData(
+                    doc.select("li.kv__item").toString());
 
             double[] closeValues = callApi_parseCloseValues(symbol);
             CloseValueSums closeValueSums = getCloseValueSums(closeValues);
-
             fiftyDayMA = parseFiftyDayMovingAverage(closeValueSums);
             hundredDayMA = parseHundredDayMovingAverage(closeValues, closeValueSums);
         } catch (Exception e) {
             System.out.println(e);
-        }
-    }
-
-    private String parseOpen(String line) {
-        int deci = getTarget(line, ".");
-        int start = deci;
-        while (line.charAt(start) != '$') {
-            start--;
-        }
-        return line.substring(start + 1, deci + 3);
-    }
-
-    private String parseLow(String line) {
-        int start = getDeci(line, getTarget(line, "Day Range"));
-        while (line.charAt(start) != '>') {
-            start--;
-        }
-        return line.substring(start + 1, getDeci(line, getTarget(line, "Day Range")) + 3);
-    }
-
-    private String parseHigh(String line) {
-        int index = getDeci(line, getTarget(line, "Day Range")) + 1;
-        index = getDeci(line, index);
-        int start2 = index;
-        while (line.charAt(start2) != '-') {
-            start2--;
-        }
-        return line.substring(start2 + 1, index + 3);
-    }
-
-    private String parseYearlyLow(String line) {
-        int start = getDeci(line, getTarget(line, "52 Week Range"));
-        while (line.charAt(start) != '>') {
-            start--;
-        }
-        return line.substring(start + 1, getDeci(line, getTarget(line, "52 Week Range")) + 3);
-    }
-
-    private String parseYearlyHigh(String line) {
-        int index = getDeci(line, getTarget(line, "52 Week Range")) + 1;
-        // Find the decimal of the high
-        index = getDeci(line, index);
-        int start2 = index;
-        while (line.charAt(start2) != '-') {
-            start2--;
-        }
-        return line.substring(start2 + 1, index + 3);
-    }
-
-    private int getTarget(String line, String title) {
-        return line.indexOf(title);
-    }
-
-    private int getDeci(String line, int target) {
-        return line.indexOf(".", target);
-    }
-
-    private String parseMarketCap(String line) {
-        int target = getTarget(line, "Market Cap");
-        int deci = line.indexOf(".", target);
-        int start = deci;
-        if (deci - target > 200) { // ETFs will show N/A
-            return "N/A";
-        }
-        while (line.charAt(start) != '$') {
-            start--;
-        }
-        String result = line.substring(start + 1, deci + 4); // increased length to get the B, M, or K
-        if (result.endsWith("<")) {
-            result = result.substring(0, result.length() - 2);
-        }
-        if (!result.endsWith("B") && !result.endsWith("M") && !result.endsWith("K")) {
-            result = "N/A";
-        }
-        return result;
-    }
-
-    private String parsePERatio(String line) {
-        int target = getTarget(line, "P/E Ratio");
-        int deci = line.indexOf(".", target);
-        int start = deci;
-        while (line.charAt(start) != '>') {
-            start--;
-        }
-        if ((deci - target) < 70) {
-            return line.substring(start + 1, deci + 3);
-        }
-        return "N/A";
-    }
-
-    private String parseEarningsPerShare(String line) {
-        int target = getTarget(line, "EPS");
-        int deci = line.indexOf(".", target);
-        int start = deci;
-        while (line.charAt(start) != '$') {
-            start--;
-        }
-        if ((deci - target) < 70) { // if N/A then keep EPS as N/A
-            return line.substring(start + 1, deci + 3);
-        }
-        return "N/A";
-    }
-
-    private String parsePercentageFloatShorted(String line) {
-        int target = getTarget(line, "Float Shorted");
-        int deci = line.indexOf(".", target);
-        int start = deci;
-        while (line.charAt(start) != '>') {
-            start--;
-        }
-        if ((deci - target) < 70) {
-            return line.substring(start + 1, deci + 3);
-        }
-        return "N/A";
-    }
-
-    private String parseAverageVolume(String line) {
-        int target = getTarget(line, "Average Volume");
-        int deci = line.indexOf(".", target);
-        int start = deci;
-        while (line.charAt(start) != '>') {
-            start--;
-        }
-        String temp = line.substring(start + 1, deci + 4);
-        if (temp.charAt(temp.length() - 1) == '<') {
-            return temp.substring(0, temp.length() - 1);
-        } else {
-            return temp;
         }
     }
 
@@ -276,39 +128,39 @@ public class StockSymbol {
     }
 
     public String getOpen() {
-        return open;
+        return historicalStockData.parseOpen();
     }
 
     public String getLow() {
-        return low;
+        return historicalStockData.parseLow();
     }
 
     public String getHigh() {
-        return high;
+        return historicalStockData.parseHigh();
     }
 
     public String getYearlyLow() {
-        return yearlyLow;
+        return historicalStockData.parseYearlyLow();
     }
 
     public String getYearlyHigh() {
-        return yearlyHigh;
+        return historicalStockData.parseYearlyHigh();
     }
 
     public String getMarketCap() {
-        return marketCap;
+        return historicalStockData.parseMarketCap();
     }
 
     public String getPeRatio() {
-        return peRatio;
+        return historicalStockData.parsePERatio();
     }
 
     public String getEps() {
-        return eps;
+        return historicalStockData.parseEarningsPerShare();
     }
 
     public String getFloatShorted() {
-        return floatShorted;
+        return historicalStockData.parsePercentageFloatShorted();
     }
 
 
@@ -318,14 +170,12 @@ public class StockSymbol {
 
 
     public String getAverageVolume() {
-        return averageVolume;
+        return historicalStockData.parseAverageVolume();
     }
-
 
     public String getFiftyDayMA() {
         return fiftyDayMA;
     }
-
 
     public String getHundredDayMA() {
         return hundredDayMA;
