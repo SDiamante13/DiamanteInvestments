@@ -165,19 +165,16 @@ public class CandleStick extends JFrame implements ChartMouseListener {
         try {
             /*Grab the stock data from the Alpha Vantage API*/
             StockChartData stockData = new StockChartData(timeF, symbol, interval);
-            final int size = stockData.getOpens().size();
-            OHLCDataItem[] data = new OHLCDataItem[size];
-            for (Date date : stockData.getDates()) {
-                date.setYear(date.getYear() - 1900); // edit years
-                date.setMonth(date.getMonth() - 1);
-            }
-            for (int i = 0; i < size; i++) {
-                data[i] = new OHLCDataItem(stockData.getDates().pop(), stockData.getOpens().pop(), stockData.getHighs().pop(), stockData.getLows().pop(), stockData.getCloses().pop(), stockData.getVolumes().pop());
-            }
+            OHLCDataItem[] data = createDataItems(stockData);
 
             CandlestickRenderer renderer = new CandlestickRenderer();
             DefaultOHLCDataset dataSet = new DefaultOHLCDataset(1, data);
-            chart2 = ChartFactory.createCandlestickChart(symbol, "Date", "Price", dataSet, false);
+            chart2 = ChartFactory.createCandlestickChart(
+                    symbol,
+                    "Date",
+                    "Price",
+                    dataSet,
+                    false);
             plot2 = chart2.getXYPlot();
             DateAxis domainAxis = (DateAxis) plot2.getDomainAxis();
             NumberAxis rangeAxis = new NumberAxis();
@@ -195,6 +192,25 @@ public class CandleStick extends JFrame implements ChartMouseListener {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private OHLCDataItem[] createDataItems(StockChartData stockData) {
+        final int size = stockData.getOpens().size();
+        OHLCDataItem[] data = new OHLCDataItem[size];
+        for (Date date : stockData.getDates()) {
+            date.setYear(date.getYear() - 1900); // edit years
+            date.setMonth(date.getMonth() - 1);
+        }
+        for (int i = 0; i < size; i++) {
+            data[i] = new OHLCDataItem(
+                    stockData.getDates().pop(),
+                    stockData.getOpens().pop(),
+                    stockData.getHighs().pop(),
+                    stockData.getLows().pop(),
+                    stockData.getCloses().pop(),
+                    stockData.getVolumes().pop());
+        }
+        return data;
     }
 
     private class ChartOptions {
