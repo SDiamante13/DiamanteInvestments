@@ -161,7 +161,7 @@ public class CandleStick extends JFrame implements ChartMouseListener {
         return contentPane;
     }
 
-    public void createContent(StockChartData.TimeFrame timeF, String symbol, StockChartData.Interval interval) {
+    private void createContent(StockChartData.TimeFrame timeF, String symbol, StockChartData.Interval interval) {
         try {
             /*Grab the stock data from the Alpha Vantage API*/
             StockChartData stockData = new StockChartData(timeF, symbol, interval);
@@ -183,107 +183,137 @@ public class CandleStick extends JFrame implements ChartMouseListener {
             NumberAxis rangeAxis = new NumberAxis();
             renderer.setSeriesPaint(0, Color.BLACK);
             renderer.setDrawVolume(true);
-            DateTickUnit tickUnit = new DateTickUnit(DateTickUnit.DAY, 1);
-            SimpleDateFormat customDateFormat = new SimpleDateFormat("MMM");
-            // Set dateFormat depending on TimeSeries
-            String dateFormat = "MMM-dd";
-            if (stockData.getTimeFrame() == StockChartData.TimeFrame.MONTHLY) {
-                tickUnit = new DateTickUnit(DateTickUnit.MONTH, 9);
-                dateFormat = "yyyy-MMM";
-                customDateFormat = new SimpleDateFormat(dateFormat);
-            } else if (stockData.getTimeFrame() == StockChartData.TimeFrame.WEEKLY) {
-                tickUnit = new DateTickUnit(DateTickUnit.MONTH, 8);
-                dateFormat = "MMM-YYYY";
-                customDateFormat = new SimpleDateFormat(dateFormat);
-            } else if (stockData.getTimeFrame() == StockChartData.TimeFrame.DAILY) {
-                tickUnit = new DateTickUnit(DateTickUnit.DAY, 20);
-                dateFormat = "MMM-dd";
-                customDateFormat = new SimpleDateFormat(dateFormat);
 
-            } else if (stockData.getTimeFrame() == StockChartData.TimeFrame.INTRADAY) { // set Intraday custom dateformats and tick units
-                switch (stockData.getInterval()) {
-                    case ONE:
-                        tickUnit = new DateTickUnit(DateTickUnit.MINUTE, 10);
-                        dateFormat = "HH:mm:ss";
-                        customDateFormat = new SimpleDateFormat(dateFormat);
-                        break;
+            ChartOptions chartOptions = determineChartOptions(stockData);
 
-                    case FIVE:
-                        tickUnit = new DateTickUnit(DateTickUnit.MINUTE, 30);
-                        dateFormat = "HH:mm";
-                        customDateFormat = new SimpleDateFormat(dateFormat);
-                        break;
+            setTimeline(stockData, domainAxis);
 
-                    case FIFTEEN:
-                        tickUnit = new DateTickUnit(DateTickUnit.HOUR, 2);
-                        dateFormat = "EEE, HH:mm";
-                        customDateFormat = new SimpleDateFormat(dateFormat);
-                        break;
+            setAttributesOnAxis(domainAxis, rangeAxis, chartOptions.getTickUnit(), chartOptions.getCustomDateFormat());
+            setPriceRangesOnXYPlot(getLowestLow(dataSet), getHighestHigh(dataSet));
 
-                    case THIRTY:
-                        tickUnit = new DateTickUnit(DateTickUnit.HOUR, 6);
-                        dateFormat = "EEE HH:mm";
-                        customDateFormat = new SimpleDateFormat(dateFormat);
-                        break;
-
-                    case SIXTY:
-                        tickUnit = new DateTickUnit(DateTickUnit.DAY, 1);
-                        dateFormat = "EEE, d MMM 'yy";
-                        customDateFormat = new SimpleDateFormat(dateFormat);
-                        break;
-                }
-            }
-
-            // for intraday
-            if (stockData.getTimeFrame() == StockChartData.TimeFrame.INTRADAY) {
-                SegmentedTimeline fifteenTimeline = SegmentedTimeline.newFifteenMinuteTimeline(); /* This sets the timeline as a Mon-Fri 9am-4pm timeframe*/
-                domainAxis.setTimeline(fifteenTimeline);
-            } else {
-                // for all others
-                SegmentedTimeline weekdayTimeline = SegmentedTimeline.newMondayThroughFridayTimeline();
-                domainAxis.setTimeline(weekdayTimeline);
-            }
-
-            rangeAxis.setAutoRangeIncludesZero(false);
-            // set custom tick unit
-            domainAxis.setTickUnit(tickUnit);
-            // set custom date format
-            domainAxis.setDateFormatOverride(customDateFormat);
-            // set Range for prices
-            double lowestLow = getLowestLow(dataSet);
-            double highestHigh = getHighestHigh(dataSet);
-            chart2.getXYPlot().getRangeAxis().setRange(lowestLow * 0.95, highestHigh * 1.05);
-            plot2.setOrientation(PlotOrientation.VERTICAL);
-            chart2.setAntiAlias(false);
-
-
-            //Now create the chart and chart panel
-            plot2.setRenderer(renderer);
-
-            chartPanel2 = new ChartPanel(chart2);
-            chartPanel2.setPreferredSize(new Dimension(600, 300));
-            chartPanel2.setMouseZoomable(true);
-            chartPanel2.setMouseWheelEnabled(true);
-
-            // Mouse listener
-            chartPanel2.addChartMouseListener(this);
-            CrosshairOverlay crosshairOverlay = new CrosshairOverlay();
-            xCrosshair2 = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
-            xCrosshair2.setLabelVisible(true);
-            yCrosshair2 = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
-            yCrosshair2.setLabelVisible(true);
-            crosshairOverlay.addDomainCrosshair(xCrosshair2);
-            crosshairOverlay.addRangeCrosshair(yCrosshair2);
-            chartPanel2.addOverlay(crosshairOverlay);
-            chartPanel2.setFillZoomRectangle(true);
-            contentPane.add(chartPanel2, BorderLayout.CENTER);
-            contentPane.validate();
-            chartPanel2.setHorizontalAxisTrace(true);
-            chartPanel2.setVerticalAxisTrace(true);
-            chartPanel2.repaint();
+            createChart(renderer);
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private class ChartOptions {
+
+        private DateTickUnit tickUnit;
+        private SimpleDateFormat customDateFormat = new SimpleDateFormat("MMM");
+        private String dateFormat;
+
+        public ChartOptions(DateTickUnit tickUnit, String dateFormat) {
+            this.tickUnit = tickUnit;
+            this.dateFormat = dateFormat;
+        }
+
+        public DateTickUnit getTickUnit() {
+            return tickUnit;
+        }
+
+        public SimpleDateFormat getCustomDateFormat() {
+            return customDateFormat;
+        }
+    }
+
+    // TODO: refactor to polymorphism
+    private ChartOptions determineChartOptions(StockChartData stockData) {
+        if (stockData.getTimeFrame() == StockChartData.TimeFrame.MONTHLY) {
+            return new ChartOptions(
+                    new DateTickUnit(DateTickUnit.MONTH, 9),
+                    "yyyy-MMM");
+        } else if (stockData.getTimeFrame() == StockChartData.TimeFrame.WEEKLY) {
+            return new ChartOptions(
+                    new DateTickUnit(DateTickUnit.MONTH, 8),
+                    "MMM-YYYY");
+        } else if (stockData.getTimeFrame() == StockChartData.TimeFrame.DAILY) {
+            return new ChartOptions(
+                    new DateTickUnit(DateTickUnit.DAY, 20),
+                    "MMM-dd");
+        } else if (stockData.getTimeFrame() == StockChartData.TimeFrame.INTRADAY) {
+            // set Intraday custom dateformats and tick units
+
+            // FIXME: Possible bug with the date format
+            switch (stockData.getInterval()) {
+                case ONE:
+                    return new ChartOptions(
+                            new DateTickUnit(DateTickUnit.MINUTE, 10),
+                            "HH:mm:ss");
+                case FIVE:
+                    return new ChartOptions(
+                            new DateTickUnit(DateTickUnit.MINUTE, 30),
+                            "HH:mm");
+                case FIFTEEN:
+                    return new ChartOptions(
+                            new DateTickUnit(DateTickUnit.HOUR, 2),
+                            "EEE, HH:mm");
+                case THIRTY:
+                    return new ChartOptions(
+                            new DateTickUnit(DateTickUnit.HOUR, 6),
+                            "EEE HH:mm");
+                case SIXTY:
+                    return new ChartOptions(
+                            new DateTickUnit(DateTickUnit.DAY, 1),
+                            "EEE, d MMM 'yy");
+            }
+        }
+
+        return new ChartOptions(
+                new DateTickUnit(DateTickUnit.DAY, 1),
+                "MMM-dd");
+    }
+
+    private void setTimeline(StockChartData stockData, DateAxis domainAxis) {
+        // for intraday
+        if (stockData.getTimeFrame() == StockChartData.TimeFrame.INTRADAY) {
+            SegmentedTimeline fifteenTimeline = SegmentedTimeline.newFifteenMinuteTimeline(); /* This sets the timeline as a Mon-Fri 9am-4pm timeframe*/
+            domainAxis.setTimeline(fifteenTimeline);
+        } else {
+            // for all others
+            SegmentedTimeline weekdayTimeline = SegmentedTimeline.newMondayThroughFridayTimeline();
+            domainAxis.setTimeline(weekdayTimeline);
+        }
+    }
+
+    private void setAttributesOnAxis(DateAxis domainAxis,
+                                     NumberAxis rangeAxis,
+                                     DateTickUnit tickUnit,
+                                     SimpleDateFormat customDateFormat) {
+        rangeAxis.setAutoRangeIncludesZero(false);
+        domainAxis.setTickUnit(tickUnit);
+        domainAxis.setDateFormatOverride(customDateFormat);
+    }
+
+    private void setPriceRangesOnXYPlot(double lowestLow, double highestHigh) {
+        chart2.getXYPlot().getRangeAxis()
+                .setRange(lowestLow * 0.95, highestHigh * 1.05);
+        plot2.setOrientation(PlotOrientation.VERTICAL);
+        chart2.setAntiAlias(false);
+    }
+
+    private void createChart(CandlestickRenderer renderer) {
+        plot2.setRenderer(renderer);
+        chartPanel2 = new ChartPanel(chart2);
+        chartPanel2.setPreferredSize(new Dimension(600, 300));
+        chartPanel2.setMouseZoomable(true);
+        chartPanel2.setMouseWheelEnabled(true);
+        // Mouse listener
+        chartPanel2.addChartMouseListener(this);
+        CrosshairOverlay crosshairOverlay = new CrosshairOverlay();
+        xCrosshair2 = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
+        xCrosshair2.setLabelVisible(true);
+        yCrosshair2 = new Crosshair(Double.NaN, Color.GRAY, new BasicStroke(0f));
+        yCrosshair2.setLabelVisible(true);
+        crosshairOverlay.addDomainCrosshair(xCrosshair2);
+        crosshairOverlay.addRangeCrosshair(yCrosshair2);
+        chartPanel2.addOverlay(crosshairOverlay);
+        chartPanel2.setFillZoomRectangle(true);
+        contentPane.add(chartPanel2, BorderLayout.CENTER);
+        contentPane.validate();
+        chartPanel2.setHorizontalAxisTrace(true);
+        chartPanel2.setVerticalAxisTrace(true);
+        chartPanel2.repaint();
     }
 
     @Override
