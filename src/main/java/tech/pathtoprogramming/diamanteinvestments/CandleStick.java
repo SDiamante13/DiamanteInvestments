@@ -1,12 +1,6 @@
 package tech.pathtoprogramming.diamanteinvestments;
 
-import java.awt.BasicStroke;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.GraphicsEnvironment;
+import java.awt.*;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -31,182 +25,125 @@ import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.data.general.DatasetUtilities;
 import org.jfree.data.xy.DefaultOHLCDataset;
 import org.jfree.data.xy.OHLCDataItem;
-import org.jfree.data.xy.OHLCDataset;
 import org.jfree.ui.RectangleEdge;
 
-import java.awt.GridLayout;
 import java.awt.geom.Rectangle2D;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.swing.JRadioButton;
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 
 public class CandleStick extends JFrame implements ChartMouseListener {
 
-    private JPanel contentPane;
-    private String symbolName;
+    public static final String INTRADAY_CHARTS_UNAVAILABLE_ERROR = "Error in retrieving chart: INTRADAY charts are currently unavailable.";
+    private final JPanel contentPane;
 
-    JPanel TimeSeriesSelectionPanel;
+    private JPanel timeSeriesSelectionPanel;
     private ChartPanel chartPanel2;
     private JFreeChart chart2;
     private XYPlot plot2;
     private Crosshair xCrosshair2;
     private Crosshair yCrosshair2;
-    private static boolean firstSelected = true;
-    private ButtonGroup timeSeriesGroup;
-    private JRadioButton rdbtn5Min;
-    private JRadioButton rdbtn15Min;
-    private JRadioButton rdbtn30Min;
-    private JRadioButton rdbtn60Min;
-    private JRadioButton rdbtnDaily;
-    private JRadioButton rdbtnWeekly;
-    private JRadioButton rdbtnMonthly;
-    private JButton btnClear;
-
-    /*	Add username to Portfolio (top right)
-     *  Move stock icon to top left
-     *
-     *
-     *  Password should not include username
-     *
-     * */
-
-
-    /**
-     * Launch the application.
-     */
-    public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    CandleStick frame = new CandleStick();
-                    frame.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
-
-    /**
-     * Create the frame.
-     */
-
-    public CandleStick() {
-        this("NA");
-    }
+    private final ButtonGroup timeSeriesGroup;
+    private final JRadioButton rdbtn5Min;
+    private final JRadioButton rdbtn15Min;
+    private final JRadioButton rdbtn30Min;
+    private final JRadioButton rdbtn60Min;
+    private final JRadioButton rdbtnDaily;
+    private final JRadioButton rdbtnWeekly;
+    private final JRadioButton rdbtnMonthly;
 
     public CandleStick(String symbolName) {
         super();
-        this.symbolName = symbolName;
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        this.setExtendedState(this.getExtendedState() | this.MAXIMIZED_BOTH);
+        this.setExtendedState(this.getExtendedState() | MAXIMIZED_BOTH);
         setBounds(100, 100, 755, 535);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         contentPane.setLayout(new BorderLayout(0, 0));
         setContentPane(contentPane);
 
-        TimeSeriesSelectionPanel = new JPanel();
-        contentPane.add(TimeSeriesSelectionPanel, BorderLayout.SOUTH);
-        TimeSeriesSelectionPanel.setLayout(new GridLayout(4, 2, 10, 10));
+        timeSeriesSelectionPanel = new JPanel();
+        contentPane.add(timeSeriesSelectionPanel, BorderLayout.SOUTH);
+        timeSeriesSelectionPanel.setLayout(new GridLayout(4, 2, 10, 10));
 
-        // set up buttons
         rdbtn5Min = new JRadioButton("5 Minute");
-        rdbtn5Min.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent arg0) {
-                try {
-                    clearPlot();
-                    createContent(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.FIVE);
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "Error in retrieving chart: INTRADAY charts are currently unavailable.");
-                }
+        rdbtn5Min.addItemListener(arg0 -> {
+            try {
+                clearPlot();
+                createContent(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.FIVE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, INTRADAY_CHARTS_UNAVAILABLE_ERROR);
             }
         });
-        TimeSeriesSelectionPanel.add(rdbtn5Min);
+        timeSeriesSelectionPanel.add(rdbtn5Min);
 
         rdbtn30Min = new JRadioButton("30 Minute");
-        rdbtn30Min.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent arg0) {
-                try {
-                    clearPlot();
-                    createContent(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.THIRTY);
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "Error in retrieving chart: INTRADAY charts are currently unavailable.");
-                }
+        rdbtn30Min.addItemListener(arg0 -> {
+            try {
+                clearPlot();
+                createContent(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.THIRTY);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, INTRADAY_CHARTS_UNAVAILABLE_ERROR);
             }
         });
-        TimeSeriesSelectionPanel.add(rdbtn30Min);
+        timeSeriesSelectionPanel.add(rdbtn30Min);
 
         rdbtn15Min = new JRadioButton("15 Minute");
-        rdbtn15Min.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent arg0) {
-                try {
-                    clearPlot();
-                    createContent(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.FIFTEEN);
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "Error in retrieving chart: INTRADAY charts are currently unavailable.");
-                }
+        rdbtn15Min.addItemListener(arg0 -> {
+            try {
+                clearPlot();
+                createContent(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.FIFTEEN);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, INTRADAY_CHARTS_UNAVAILABLE_ERROR);
             }
         });
-        TimeSeriesSelectionPanel.add(rdbtn15Min);
+        timeSeriesSelectionPanel.add(rdbtn15Min);
 
         rdbtn60Min = new JRadioButton("60 Minute");
-        rdbtn60Min.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent arg0) {
-                try {
-                    clearPlot();
-                    createContent(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.SIXTY);
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "Error in retrieving chart: Intraday charts are currently unavailable.");
-                }
+        rdbtn60Min.addItemListener(arg0 -> {
+            try {
+                clearPlot();
+                createContent(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.SIXTY);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, INTRADAY_CHARTS_UNAVAILABLE_ERROR);
             }
         });
-        TimeSeriesSelectionPanel.add(rdbtn60Min);
+        timeSeriesSelectionPanel.add(rdbtn60Min);
 
         rdbtnDaily = new JRadioButton("Daily");
-        rdbtnDaily.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent arg0) {
-                try {
-                    clearPlot();
-                    createContent(StockChartData.TimeFrame.DAILY, symbolName, StockChartData.Interval.FIVE);
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "An error occured in displaying the daily chart.");
-                }
+        rdbtnDaily.addItemListener(arg0 -> {
+            try {
+                clearPlot();
+                createContent(StockChartData.TimeFrame.DAILY, symbolName, StockChartData.Interval.FIVE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "An error occured in displaying the daily chart.");
             }
         });
-        TimeSeriesSelectionPanel.add(rdbtnDaily);
+        timeSeriesSelectionPanel.add(rdbtnDaily);
 
         rdbtnWeekly = new JRadioButton("Weekly");
-        rdbtnWeekly.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent arg0) {
-                try {
-                    clearPlot();
-                    createContent(StockChartData.TimeFrame.WEEKLY, symbolName, StockChartData.Interval.FIVE);
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "An error occured in displaying the weekly chart.");
-                }
+        rdbtnWeekly.addItemListener(arg0 -> {
+            try {
+                clearPlot();
+                createContent(StockChartData.TimeFrame.WEEKLY, symbolName, StockChartData.Interval.FIVE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "An error occurred in displaying the weekly chart.");
             }
         });
-        TimeSeriesSelectionPanel.add(rdbtnWeekly);
+        timeSeriesSelectionPanel.add(rdbtnWeekly);
 
         rdbtnMonthly = new JRadioButton("Monthly");
-        rdbtnMonthly.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent arg0) {
-                try {
-                    clearPlot();
-                    createContent(StockChartData.TimeFrame.MONTHLY, symbolName, StockChartData.Interval.FIVE);
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(null, "An error occured in displaying the monthly chart.");
-                }
+        rdbtnMonthly.addItemListener(arg0 -> {
+            try {
+                clearPlot();
+                createContent(StockChartData.TimeFrame.MONTHLY, symbolName, StockChartData.Interval.FIVE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "An error occurred in displaying the monthly chart.");
             }
         });
-        TimeSeriesSelectionPanel.add(rdbtnMonthly);
+        timeSeriesSelectionPanel.add(rdbtnMonthly);
 
         timeSeriesGroup = new ButtonGroup();
         timeSeriesGroup.add(rdbtn5Min);
@@ -217,22 +154,8 @@ public class CandleStick extends JFrame implements ChartMouseListener {
         timeSeriesGroup.add(rdbtnWeekly);
         timeSeriesGroup.add(rdbtnMonthly);
 
-        // set Daily as selected first
         rdbtnDaily.setSelected(true);
-
     }
-
-    // Set up item listeners to recall constructor when radio button selections are changed
-//	    rdbtn5Min.addItemListener(new HandlerClass(tech.pathtoprogramming.diamanteinvestments.StockChartData.TimeFrame.INTRADAY, symbolName, tech.pathtoprogramming.diamanteinvestments.StockChartData.Interval.FIVE));
-//	    rdbtn15Min.addItemListener(new HandlerClass(tech.pathtoprogramming.diamanteinvestments.StockChartData.TimeFrame.INTRADAY, symbolName, tech.pathtoprogramming.diamanteinvestments.StockChartData.Interval.FIFTEEN));
-//	    rdbtn30Min.addItemListener(new HandlerClass(tech.pathtoprogramming.diamanteinvestments.StockChartData.TimeFrame.INTRADAY, symbolName, tech.pathtoprogramming.diamanteinvestments.StockChartData.Interval.THIRTY));
-//	    rdbtn60Min.addItemListener(new HandlerClass(tech.pathtoprogramming.diamanteinvestments.StockChartData.TimeFrame.INTRADAY, symbolName, tech.pathtoprogramming.diamanteinvestments.StockChartData.Interval.SIXTY));
-//	    rdbtnDaily.addItemListener(new HandlerClass(tech.pathtoprogramming.diamanteinvestments.StockChartData.TimeFrame.DAILY, symbolName, tech.pathtoprogramming.diamanteinvestments.StockChartData.Interval.FIVE));
-//	    rdbtnWeekly.addItemListener(new HandlerClass(tech.pathtoprogramming.diamanteinvestments.StockChartData.TimeFrame.WEEKLY, symbolName, tech.pathtoprogramming.diamanteinvestments.StockChartData.Interval.FIVE));
-//	    rdbtnMonthly.addItemListener(new HandlerClass(tech.pathtoprogramming.diamanteinvestments.StockChartData.TimeFrame.MONTHLY, symbolName, tech.pathtoprogramming.diamanteinvestments.StockChartData.Interval.FIVE));
-//		
-
-    // The following functions will aid in displaying the candlestick chart on to the chartPanel
 
     public JPanel getContentPane() {
         return contentPane;
@@ -254,7 +177,7 @@ public class CandleStick extends JFrame implements ChartMouseListener {
 
             CandlestickRenderer renderer = new CandlestickRenderer();
             DefaultOHLCDataset dataSet = new DefaultOHLCDataset(1, data);
-            chart2 = ChartFactory.createCandlestickChart(symbol, "Date", "Price", (OHLCDataset) dataSet, false);
+            chart2 = ChartFactory.createCandlestickChart(symbol, "Date", "Price", dataSet, false);
             plot2 = chart2.getXYPlot();
             DateAxis domainAxis = (DateAxis) plot2.getDomainAxis();
             NumberAxis rangeAxis = new NumberAxis();
@@ -262,10 +185,8 @@ public class CandleStick extends JFrame implements ChartMouseListener {
             renderer.setDrawVolume(true);
             DateTickUnit tickUnit = new DateTickUnit(DateTickUnit.DAY, 1);
             SimpleDateFormat customDateFormat = new SimpleDateFormat("MMM");
-            ;
             // Set dateFormat depending on TimeSeries
             String dateFormat = "MMM-dd";
-            ;
             if (stockData.getTimeFrame() == StockChartData.TimeFrame.MONTHLY) {
                 tickUnit = new DateTickUnit(DateTickUnit.MONTH, 9);
                 dateFormat = "yyyy-MMM";
@@ -365,9 +286,6 @@ public class CandleStick extends JFrame implements ChartMouseListener {
         }
     }
 
-
-    // The following functions will display an axis of the price
-
     @Override
     public void chartMouseClicked(ChartMouseEvent event) {
         // ignore
@@ -384,9 +302,6 @@ public class CandleStick extends JFrame implements ChartMouseListener {
         this.xCrosshair2.setValue(x);
         this.yCrosshair2.setValue(y);
     }
-
-
-    // These functions will get the highest/lowest values of the prices
 
     protected double getLowestLow(DefaultOHLCDataset dataset) {
         double lowest;
@@ -421,7 +336,4 @@ public class CandleStick extends JFrame implements ChartMouseListener {
             contentPane.revalidate();
         }
     }
-
 }
-	
-
