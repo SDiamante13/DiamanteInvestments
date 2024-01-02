@@ -1,82 +1,46 @@
 package tech.pathtoprogramming.diamanteinvestments;
 
-import java.util.Date;
+import java.util.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.NumberFormat;
-import java.util.Scanner;
-import java.util.Stack;
 
 // Alpha Vantage API Key: NKNKJCBRLYI9H5SO
 
 public class StockChartData {
 	
-	private Stack<Date> dates;
-	private Stack<Double> opens;
-	private Stack<Double> highs;
-	private Stack<Double> lows;
-	private Stack<Double> closes;
-	private Stack<Double> volumes;
+	private final Deque<Date> dates;
+	private Deque<Double> opens;
+	private Deque<Double> highs;
+	private Deque<Double> lows;
+	private Deque<Double> closes;
+	private Deque<Double> volumes;
 	private TimeFrame timeSeries;
 	private String symbol;
 	private Interval interval;
 	Date date;
-	
-	
 
-	// Creating enum for TIME_SERIES selection
-	public enum TimeFrame{
-		INTRADAY{
-			public String toString() {
-				return "TIME_SERIES_INTRADAY";
-			}
-		},
-		DAILY{
-			public String toString() {
-				return "TIME_SERIES_DAILY";
-			}
-		},
-		WEEKLY{
-			public String toString() {
-				return "TIME_SERIES_WEEKLY";
-			}
-		},
-		MONTHLY{
-			public String toString() {
-				return "TIME_SERIES_MONTHLY";
-			}
-		}
+
+	public StockChartData(TimeFrame timeSeries,
+						  String symbol,
+						  Interval interval,
+						  Deque<Date> dates,
+						  Deque<Double> opens,
+						  Deque<Double> highs,
+						  Deque<Double> lows,
+						  Deque<Double> closes,
+						  Deque<Double> volumes) {
+		this.timeSeries = timeSeries;
+		this.symbol = symbol;
+		this.interval = interval;
+		this.dates = dates;
+		this.opens = opens;
+		this.highs = highs;
+		this.lows = lows;
+		this.closes = closes;
+		this.volumes = volumes;
 	}
-	
-	// Creating enum for Time interval (only applicable to INTRADAY)
-	public enum Interval{
-		ONE{
-			public String toString() {
-				return "1min";
-			}
-		},
-		FIVE{
-			public String toString() {
-				return "5min";
-			}
-		},
-		FIFTEEN{
-			public String toString() {
-				return "15min";
-			}
-		},
-		THIRTY{
-			public String toString() {
-				return "30min";
-			}
-		},
-		SIXTY{
-				public String toString() {
-					return "60min";
-				}
-	}
-		}
-	
+
 	// constructor
 	public StockChartData(TimeFrame timeSeries, String symbol, Interval interval)
 	{
@@ -84,12 +48,12 @@ public class StockChartData {
 		this.symbol = symbol;
 		this.interval = interval;
 		
-		dates = new Stack<>();
-		opens = new Stack<>();
-		highs = new Stack<>();
-		lows = new Stack<>();
-		closes = new Stack<>();
-		volumes = new Stack<>();
+		dates = new ArrayDeque<>();
+		opens = new ArrayDeque<>();
+		highs = new ArrayDeque<>();
+		lows = new ArrayDeque<>();
+		closes = new ArrayDeque<>();
+		volumes = new ArrayDeque<>();
 		int target = 0;
 		int year = 0, month = 0, day = 1, hour = 1, min = 1, sec = 1;
 		int start = 0;
@@ -199,27 +163,27 @@ public class StockChartData {
 		}
 	}
 
-	public Stack<Date> getDates() {
+	public Deque<Date> getDates() {
 		return dates;
 	}
 
-	public Stack<Double> getOpens() {
+	public Deque<Double> getOpens() {
 		return opens;
 	}
 
-	public Stack<Double> getHighs() {
+	public Deque<Double> getHighs() {
 		return highs;
 	}
 
-	public Stack<Double> getLows() {
+	public Deque<Double> getLows() {
 		return lows;
 	}
 
-	public Stack<Double> getCloses() {
+	public Deque<Double> getCloses() {
 		return closes;
 	}
 
-	public Stack<Double> getVolumes() {
+	public Deque<Double> getVolumes() {
 		return volumes;
 	}
 	

@@ -10,7 +10,6 @@ import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.data.general.DatasetUtilities;
 import org.jfree.data.xy.DefaultOHLCDataset;
 import org.jfree.data.xy.OHLCDataItem;
-import org.jfree.data.xy.OHLCDataset;
 import org.jfree.ui.RectangleEdge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,10 +18,6 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -416,7 +411,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
 
         JButton btnDetach = new JButton("Open in new window");
         btnDetach.addActionListener(arg0 -> {
-            CandleStick cs = new CandleStick(lblStockSymbol.getText());
+            CandleStick cs = new CandleStick(lblStockSymbol.getText(), () -> new StockChartData(TimeFrame.INTRADAY, lblStockSymbol.getText(), Interval.FIVE));
             cs.setTitle("Diamante Investments - Candlestick Chart");
             cs.setVisible(true);
 
@@ -544,7 +539,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
     public void createContent(String symbol) {
         try {
             // Grab the stock data from the Alpha Vantage API
-            StockChartData stockData = new StockChartData(StockChartData.TimeFrame.DAILY, symbol, StockChartData.Interval.FIFTEEN);
+            StockChartData stockData = new StockChartData(TimeFrame.DAILY, symbol, Interval.FIFTEEN);
             final int size = stockData.getOpens().size();
             OHLCDataItem[] data = new OHLCDataItem[size];
             for (Date date : stockData.getDates()) {
@@ -569,20 +564,20 @@ public class StockForm extends JFrame implements ChartMouseListener {
             // Set dateFormat depending on TimeSeries
             String dateFormat;
             ;
-            if (stockData.getTimeFrame() == StockChartData.TimeFrame.MONTHLY) {
+            if (stockData.getTimeFrame() == TimeFrame.MONTHLY) {
                 tickUnit = new DateTickUnit(DateTickUnit.MONTH, 9);
                 dateFormat = "yyyy-MMM";
                 customDateFormat = new SimpleDateFormat(dateFormat);
-            } else if (stockData.getTimeFrame() == StockChartData.TimeFrame.WEEKLY) {
+            } else if (stockData.getTimeFrame() == TimeFrame.WEEKLY) {
                 tickUnit = new DateTickUnit(DateTickUnit.MONTH, 8);
                 dateFormat = "MMM-YYYY";
                 customDateFormat = new SimpleDateFormat(dateFormat);
-            } else if (stockData.getTimeFrame() == StockChartData.TimeFrame.DAILY) {
+            } else if (stockData.getTimeFrame() == TimeFrame.DAILY) {
                 tickUnit = new DateTickUnit(DateTickUnit.DAY, 20);
                 dateFormat = "MMM-dd";
                 customDateFormat = new SimpleDateFormat(dateFormat);
 
-            } else if (stockData.getTimeFrame() == StockChartData.TimeFrame.INTRADAY) { // set Intraday custom dateformats and tick units
+            } else if (stockData.getTimeFrame() == TimeFrame.INTRADAY) { // set Intraday custom dateformats and tick units
                 switch (stockData.getInterval()) {
                     case ONE:
                         tickUnit = new DateTickUnit(DateTickUnit.MINUTE, 10);
@@ -617,7 +612,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
             }
 
             // for intraday
-            if (stockData.getTimeFrame() == StockChartData.TimeFrame.INTRADAY) {
+            if (stockData.getTimeFrame() == TimeFrame.INTRADAY) {
                 SegmentedTimeline fifteenTimeline = SegmentedTimeline.newFifteenMinuteTimeline();
                 // This sets the timeline as a Mon-Fri 9am-4pm timeframe
                 domainAxis.setTimeline(fifteenTimeline);
