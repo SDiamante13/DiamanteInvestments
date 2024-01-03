@@ -9,20 +9,18 @@ import java.util.Stack;
 
 public class StockChartData {
 
-    private Stack<Date> dates;
-    private Stack<Double> opens;
-    private Stack<Double> highs;
-    private Stack<Double> lows;
-    private Stack<Double> closes;
-    private Stack<Double> volumes;
-    private TimeFrame timeSeries;
-    private String symbol;
-    private Interval interval;
+    private final Stack<Date> dates;
+    private final Stack<Double> opens;
+    private final Stack<Double> highs;
+    private final Stack<Double> lows;
+    private final Stack<Double> closes;
+    private final Stack<Double> volumes;
+    private final TimeFrame timeSeries;
+    private final Interval interval;
     Date date;
 
     public StockChartData(TimeFrame timeSeries, String symbol, Interval interval) {
         this.timeSeries = timeSeries;
-        this.symbol = symbol;
         this.interval = interval;
 
         dates = new Stack<>();
@@ -31,13 +29,18 @@ public class StockChartData {
         lows = new Stack<>();
         closes = new Stack<>();
         volumes = new Stack<>();
-        int target = 0;
-        int year = 0, month = 0, day = 1, hour = 1, min = 1, sec = 1;
-        int start = 0;
-        String tempPrice = "0";
+        int target;
+        int year;
+        int month;
+        int day;
+        int hour;
+        int min;
+        int sec;
+        int start;
+        String tempPrice;
 
         String url = "https://www.alphavantage.co/query?function=" + this.timeSeries
-                + "&symbol=" + this.symbol
+                + "&symbol=" + symbol
                 + "&interval=" + this.interval
                 + "&apikey=NKNKJCBRLYI9H5SO&datatype=csv";
 
@@ -56,33 +59,33 @@ public class StockChartData {
                 // push dates
                 target = line.indexOf('-');
                 // Grab year
-                year = Integer.valueOf(line.substring(0, target));
+                year = Integer.parseInt(line.substring(0, target));
                 // Grab month
                 start = target++ + 1;
                 target = line.indexOf('-', target);
-                month = Integer.valueOf(line.substring(start, target));
+                month = Integer.parseInt(line.substring(start, target));
                 if (timeSeries != TimeFrame.INTRADAY) {
                     // Grab day for timeseries other than INTRADAY
                     start = target++ + 1;
                     target = line.indexOf(',', target);
-                    day = Integer.valueOf(line.substring(start, target));
+                    day = Integer.parseInt(line.substring(start, target));
                 } else {
                     // Grab day for INTRADAY
                     start = target++ + 1;
                     target = line.indexOf(' ', target);
-                    day = Integer.valueOf(line.substring(start, target));
+                    day = Integer.parseInt(line.substring(start, target));
                 }
                 // Grab hours, min, & sec for INTRADAY
                 if (timeSeries == TimeFrame.INTRADAY) {
                     start = target++ + 1;
                     target = line.indexOf(':', target);
-                    hour = Integer.valueOf(line.substring(start, target));
+                    hour = Integer.parseInt(line.substring(start, target));
                     start = target++ + 1;
                     target = line.indexOf(':', target);
-                    min = Integer.valueOf(line.substring(start, target));
+                    min = Integer.parseInt(line.substring(start, target));
                     start = target++ + 1;
                     target = line.indexOf(',', target);
-                    sec = Integer.valueOf(line.substring(start, target));
+                    sec = Integer.parseInt(line.substring(start, target));
                     date = new Date(year, month, day, hour, min, sec);
                 } else {
                     date = new Date(year, month, day);
@@ -94,7 +97,7 @@ public class StockChartData {
                 target = line.indexOf(",", target);
                 // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
                 tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
-                tempPrice = tempPrice.substring(1, tempPrice.length()); // trim off $
+                tempPrice = tempPrice.substring(1); // trim off $
                 opens.push(Double.parseDouble(tempPrice));
 
                 // push high prices
@@ -102,7 +105,7 @@ public class StockChartData {
                 target = line.indexOf(",", target);
                 // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
                 tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
-                tempPrice = tempPrice.substring(1, tempPrice.length()); // trim off $
+                tempPrice = tempPrice.substring(1); // trim off $
                 highs.push(Double.parseDouble(tempPrice));
 
                 // push low prices
@@ -110,7 +113,7 @@ public class StockChartData {
                 target = line.indexOf(",", target);
                 // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
                 tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
-                tempPrice = tempPrice.substring(1, tempPrice.length()); // trim off $
+                tempPrice = tempPrice.substring(1); // trim off $
                 lows.push(Double.parseDouble(tempPrice));
 
                 // push close prices
@@ -118,7 +121,7 @@ public class StockChartData {
                 target = line.indexOf(",", target);
                 // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
                 tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
-                tempPrice = tempPrice.substring(1, tempPrice.length()); // trim off $
+                tempPrice = tempPrice.substring(1); // trim off $
                 closes.push(Double.parseDouble(tempPrice));
 
                 // push volumes
