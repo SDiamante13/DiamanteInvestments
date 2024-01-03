@@ -168,5 +168,19 @@ public class StockChartData {
         return interval;
     }
 
+    @Override
+    public String toString() {
+        return "StockChartData{" +
+                "dates=" + dates +
+                ", opens=" + opens +
+                ", highs=" + highs +
+                ", lows=" + lows +
+                ", closes=" + closes +
+                ", volumes=" + volumes +
+                ", timeSeries=" + timeSeries +
+                ", interval=" + interval +
+                ", date=" + date +
+                '}';
+    }
 }
 
