@@ -36,87 +36,104 @@ public class StockChartData {
             }
             // read in data
             while (input.hasNextLine()) {
-                NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
-                String line = input.nextLine();
-                // push dates
-                int target = line.indexOf('-');
-                // Grab year
-                int year = Integer.parseInt(line.substring(0, target));
-                // Grab month
-                int start = target++ + 1;
-                target = line.indexOf('-', target);
-                int month = Integer.parseInt(line.substring(start, target));
-                int day;
-                if (timeSeries != TimeFrame.INTRADAY) {
-                    // Grab day for timeseries other than INTRADAY
-                    start = target++ + 1;
-                    target = line.indexOf(',', target);
-                    day = Integer.parseInt(line.substring(start, target));
-                } else {
-                    // Grab day for INTRADAY
-                    start = target++ + 1;
-                    target = line.indexOf(' ', target);
-                    day = Integer.parseInt(line.substring(start, target));
-                }
-                // Grab hours, min, & sec for INTRADAY
-                if (timeSeries == TimeFrame.INTRADAY) {
-                    start = target++ + 1;
-                    target = line.indexOf(':', target);
-                    int hour = Integer.parseInt(line.substring(start, target));
-                    start = target++ + 1;
-                    target = line.indexOf(':', target);
-                    int min = Integer.parseInt(line.substring(start, target));
-                    start = target++ + 1;
-                    target = line.indexOf(',', target);
-                    int sec = Integer.parseInt(line.substring(start, target));
-                    date = new Date(year, month, day, hour, min, sec);
-                } else {
-                    date = new Date(year, month, day);
-                }
-                dates.addLast(date);
-
-                // addLast open prices
-                start = target++ + 1;
-                target = line.indexOf(",", target);
-                // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-                String tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
-                tempPrice = tempPrice.substring(1); // trim off $
-                opens.addLast(Double.parseDouble(tempPrice));
-
-                // addLast high prices
-                start = target++ + 1;
-                target = line.indexOf(",", target);
-                // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-                tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
-                tempPrice = tempPrice.substring(1); // trim off $
-                highs.addLast(Double.parseDouble(tempPrice));
-
-                // addLast low prices
-                start = target++ + 1;
-                target = line.indexOf(",", target);
-                // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-                tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
-                tempPrice = tempPrice.substring(1); // trim off $
-                lows.addLast(Double.parseDouble(tempPrice));
-
-                // addLast close prices
-                start = target++ + 1;
-                target = line.indexOf(",", target);
-                // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-                tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
-                tempPrice = tempPrice.substring(1); // trim off $
-                closes.addLast(Double.parseDouble(tempPrice));
-
-                // addLast volumes
-                start = target++ + 1;
-                target = line.length() - 1;
-                volumes.addLast(Double.parseDouble(line.substring(start, target)));
+                readCsvData_addDataToInstanceVariables(timeSeries, input);
             }
 
             input.close();
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private void readCsvData_addDataToInstanceVariables(TimeFrame timeSeries, Scanner input) {
+        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
+        String line = input.nextLine();
+
+        readLine(timeSeries, currencyFormatter, line);
+    }
+
+    private void readLine(TimeFrame timeSeries, NumberFormat currencyFormatter, String line) {
+        int target = line.indexOf('-');
+        // Grab year
+        int year = Integer.parseInt(line.substring(0, target));
+        // Grab month
+        int start = target++ + 1;
+        target = line.indexOf('-', target);
+        int month = Integer.parseInt(line.substring(start, target));
+
+        int day;
+        if (timeSeries != TimeFrame.INTRADAY) {
+            // Grab day for timeseries other than INTRADAY
+            start = target++ + 1;
+            target = line.indexOf(',', target);
+            day = Integer.parseInt(line.substring(start, target));
+        } else {
+            // Grab day for INTRADAY
+            start = target++ + 1;
+            target = line.indexOf(' ', target);
+            day = Integer.parseInt(line.substring(start, target));
+        }
+        // Grab hours, min, & sec for INTRADAY
+        if (timeSeries == TimeFrame.INTRADAY) {
+            start = target++ + 1;
+            target = line.indexOf(':', target);
+            int hour = Integer.parseInt(line.substring(start, target));
+            start = target++ + 1;
+            target = line.indexOf(':', target);
+            int min = Integer.parseInt(line.substring(start, target));
+            start = target++ + 1;
+            target = line.indexOf(',', target);
+            int sec = Integer.parseInt(line.substring(start, target));
+            date = new Date(year, month, day, hour, min, sec);
+        } else {
+            date = new Date(year, month, day);
+        }
+        dates.addLast(date);
+
+        // addLast open prices
+        start = target++ + 1;
+        target = line.indexOf(",", target);
+        // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
+        String tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
+        tempPrice = tempPrice.substring(1); // trim off $
+        opens.addLast(Double.parseDouble(tempPrice));
+
+        // addLast high prices
+        start = target++ + 1;
+        target = line.indexOf(",", target);
+        // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
+        tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
+        tempPrice = tempPrice.substring(1); // trim off $
+        highs.addLast(Double.parseDouble(tempPrice));
+
+        // addLast low prices
+        start = target++ + 1;
+        target = line.indexOf(",", target);
+        // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
+        tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
+        tempPrice = tempPrice.substring(1); // trim off $
+        lows.addLast(Double.parseDouble(tempPrice));
+
+        // addLast close prices
+        start = target++ + 1;
+        target = line.indexOf(",", target);
+        // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
+        tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
+        tempPrice = tempPrice.substring(1); // trim off $
+        double close = Double.parseDouble(tempPrice);
+
+        closes.addLast(close);
+
+        double volume = parseVolume(line, target);
+        volumes.addLast(volume);
+    }
+
+    private static double parseVolume(String line, int target) {
+        int start;
+        start = target++ + 1;
+        target = line.length() - 1;
+        double volume = Double.parseDouble(line.substring(start, target));
+        return volume;
     }
 
     public Deque<Date> getDates() {
