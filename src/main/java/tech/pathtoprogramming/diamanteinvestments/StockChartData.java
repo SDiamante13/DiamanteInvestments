@@ -57,37 +57,37 @@ public class StockChartData {
     void readLine(String line) {
         NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
 
-        int target = line.indexOf('-');
+        int fromIndex = line.indexOf('-');
         // Grab year
-        int year = Integer.parseInt(line.substring(0, target));
+        int year = Integer.parseInt(line.substring(0, fromIndex));
         // Grab month
-        int start = target++ + 1;
-        target = line.indexOf('-', target);
-        int month = Integer.parseInt(line.substring(start, target));
+        int start = fromIndex++ + 1;
+        fromIndex = line.indexOf('-', fromIndex);
+        int month = Integer.parseInt(line.substring(start, fromIndex));
 
         int day;
         if (this.timeSeries != TimeFrame.INTRADAY) {
             // Grab day for timeseries other than INTRADAY
-            start = target++ + 1;
-            target = line.indexOf(',', target);
-            day = Integer.parseInt(line.substring(start, target));
+            start = fromIndex++ + 1;
+            fromIndex = line.indexOf(',', fromIndex);
+            day = Integer.parseInt(line.substring(start, fromIndex));
         } else {
             // Grab day for INTRADAY
-            start = target++ + 1;
-            target = line.indexOf(' ', target);
-            day = Integer.parseInt(line.substring(start, target));
+            start = fromIndex++ + 1;
+            fromIndex = line.indexOf(' ', fromIndex);
+            day = Integer.parseInt(line.substring(start, fromIndex));
         }
         // Grab hours, min, & sec for INTRADAY
         if (this.timeSeries == TimeFrame.INTRADAY) {
-            start = target++ + 1;
-            target = line.indexOf(':', target);
-            int hour = Integer.parseInt(line.substring(start, target));
-            start = target++ + 1;
-            target = line.indexOf(':', target);
-            int min = Integer.parseInt(line.substring(start, target));
-            start = target++ + 1;
-            target = line.indexOf(',', target);
-            int sec = Integer.parseInt(line.substring(start, target));
+            start = fromIndex++ + 1;
+            fromIndex = line.indexOf(':', fromIndex);
+            int hour = Integer.parseInt(line.substring(start, fromIndex));
+            start = fromIndex++ + 1;
+            fromIndex = line.indexOf(':', fromIndex);
+            int min = Integer.parseInt(line.substring(start, fromIndex));
+            start = fromIndex++ + 1;
+            fromIndex = line.indexOf(',', fromIndex);
+            int sec = Integer.parseInt(line.substring(start, fromIndex));
             date = new Date(year, month, day, hour, min, sec);
         } else {
             date = new Date(year, month, day);
@@ -95,50 +95,59 @@ public class StockChartData {
         dates.addLast(date);
 
         // addLast open prices
-        start = target++ + 1;
-        target = getTarget(line, target);
+        start = fromIndex++ + 1;
+        fromIndex = indexOf(line, fromIndex, ",");
         // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-        String tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
-        tempPrice = tempPrice.substring(1); // trim off $
+        String tempPrice = getFormattedPrice(line, currencyFormatter, fromIndex, start);
+        tempPrice = getSubstring(tempPrice); // trim off $
         opens.addLast(Double.parseDouble(tempPrice));
 
         // addLast high prices
-        start = target++ + 1;
-        target = getTarget(line, target);
+        start = fromIndex++ + 1;
+        fromIndex = indexOf(line, fromIndex, ",");
         // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-        tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
-        tempPrice = tempPrice.substring(1); // trim off $
+        tempPrice = getFormattedPrice(line, currencyFormatter, fromIndex, start);
+        tempPrice = getSubstring(tempPrice); // trim off $
         highs.addLast(Double.parseDouble(tempPrice));
 
         // addLast low prices
-        start = target++ + 1;
-        target = getTarget(line, target);
+        start = fromIndex++ + 1;
+        fromIndex = indexOf(line, fromIndex, ",");
         // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-        tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
-        tempPrice = tempPrice.substring(1); // trim off $
+        tempPrice = getFormattedPrice(line, currencyFormatter, fromIndex, start);
+        tempPrice = getSubstring(tempPrice); // trim off $
         lows.addLast(Double.parseDouble(tempPrice));
 
         // addLast close prices
-        start = target++ + 1;
-        target = getTarget(line, target);
-        // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-        String closeString = getSubstringForClosePrices(line, currencyFormatter, target, start);
-        double close = Double.parseDouble(closeString);
-
+        start = fromIndex++ + 1;
+        double close = getSubstringForClosePrices(
+                line,
+                currencyFormatter,
+                indexOf(line, fromIndex + 1, ","),
+                start);
         closes.addLast(close);
 
-        double volume = parseVolume(line, target + 1);
+        double volume = parseVolume(line, indexOf(line, fromIndex, ",") + 1);
         volumes.addLast(volume);
     }
 
-    private int getTarget(String line, int target) {
-        return line.indexOf(",", target);
+    private String getSubstring(String tempPrice) {
+        return tempPrice.substring(1);
     }
 
-    private String getSubstringForClosePrices(String line, NumberFormat currencyFormatter, int target, int start) {
+    private String getFormattedPrice(
+            String line, NumberFormat currencyFormatter, int fromIndex, int start) {
+        return currencyFormatter.format(Double.parseDouble(line.substring(start, fromIndex)));
+    }
+
+    private int indexOf(String line, int target, String delimiter) {
+        return line.indexOf(delimiter, target);
+    }
+
+    private double getSubstringForClosePrices(String line, NumberFormat currencyFormatter, int target, int start) {
+        // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
         double close = Double.parseDouble(line.substring(start, target));
-        return currencyFormatter.format(close)
-                .substring(1);
+        return Double.parseDouble(getSubstring(currencyFormatter.format(close)));
     }
 
     private double parseVolume(String line, int start) {
