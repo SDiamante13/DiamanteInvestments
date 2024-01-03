@@ -54,7 +54,7 @@ public class StockChartData {
         readLine(input.nextLine());
     }
 
-    public void readLine(String line) {
+    void readLine(String line) {
         NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
 
         int target = line.indexOf('-');
