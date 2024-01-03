@@ -17,6 +17,11 @@ public class StockChartData {
     private final Interval interval;
     Date date;
 
+    public StockChartData() {
+        this.timeSeries = TimeFrame.DAILY;
+        this.interval = Interval.SIXTY;
+    }
+
     public StockChartData(TimeFrame timeSeries, String symbol, Interval interval) {
         this.timeSeries = timeSeries;
         this.interval = interval;
@@ -36,7 +41,7 @@ public class StockChartData {
             }
             // read in data
             while (input.hasNextLine()) {
-                readCsvData_addDataToInstanceVariables(timeSeries, input);
+                readCsvData_addDataToInstanceVariables(input);
             }
 
             input.close();
@@ -45,14 +50,13 @@ public class StockChartData {
         }
     }
 
-    private void readCsvData_addDataToInstanceVariables(TimeFrame timeSeries, Scanner input) {
-        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
-        String line = input.nextLine();
-
-        readLine(timeSeries, currencyFormatter, line);
+    private void readCsvData_addDataToInstanceVariables(Scanner input) {
+        readLine(input.nextLine());
     }
 
-    private void readLine(TimeFrame timeSeries, NumberFormat currencyFormatter, String line) {
+    public void readLine(String line) {
+        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
+
         int target = line.indexOf('-');
         // Grab year
         int year = Integer.parseInt(line.substring(0, target));
@@ -62,7 +66,7 @@ public class StockChartData {
         int month = Integer.parseInt(line.substring(start, target));
 
         int day;
-        if (timeSeries != TimeFrame.INTRADAY) {
+        if (this.timeSeries != TimeFrame.INTRADAY) {
             // Grab day for timeseries other than INTRADAY
             start = target++ + 1;
             target = line.indexOf(',', target);
@@ -74,7 +78,7 @@ public class StockChartData {
             day = Integer.parseInt(line.substring(start, target));
         }
         // Grab hours, min, & sec for INTRADAY
-        if (timeSeries == TimeFrame.INTRADAY) {
+        if (this.timeSeries == TimeFrame.INTRADAY) {
             start = target++ + 1;
             target = line.indexOf(':', target);
             int hour = Integer.parseInt(line.substring(start, target));
@@ -128,12 +132,11 @@ public class StockChartData {
         volumes.addLast(volume);
     }
 
-    private static double parseVolume(String line, int target) {
+    private double parseVolume(String line, int target) {
         int start;
         start = target++ + 1;
         target = line.length() - 1;
-        double volume = Double.parseDouble(line.substring(start, target));
-        return volume;
+        return Double.parseDouble(line.substring(start, target));
     }
 
     public Deque<Date> getDates() {
