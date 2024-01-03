@@ -2,6 +2,7 @@ package tech.pathtoprogramming.diamanteinvestments;
 
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -103,20 +104,27 @@ public class StockChartData {
         // addLast high prices
         start = fromIndex++ + 1;
         fromIndex = indexOf(line, fromIndex, ",");
-        double high = getPrice(line, currencyFormatter, fromIndex, start);
+//        double high = getPrice(line, currencyFormatter, fromIndex, start);
+        double high = Double.parseDouble(line.split(",")[2]);
+
         highs.addLast(high);
 
         // addLast low prices
         start = fromIndex++ + 1;
         fromIndex = indexOf(line, fromIndex, ",");
         // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-        double low = getPrice(line, currencyFormatter, fromIndex, start);
+//        double low = getPrice(line, currencyFormatter, fromIndex, start);
+        DecimalFormat decimalFormat = new DecimalFormat("0.##");
+
+        double low = Double.parseDouble(decimalFormat.format(Double.parseDouble(line.split(",")[3])));
+
         lows.addLast(low);
 
         // addLast close prices
         start = fromIndex++ + 1;
         fromIndex = indexOf(line, fromIndex, ",");
-        double close = getPrice(line, currencyFormatter, fromIndex, start);
+        double close = Double.parseDouble(line.split(",")[4]);
+
         closes.addLast(close);
 
         double volume = parseVolume(line, indexOf(line, fromIndex, ",") + 1);
