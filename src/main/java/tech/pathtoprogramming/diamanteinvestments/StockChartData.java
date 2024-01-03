@@ -20,59 +20,6 @@ public class StockChartData {
     private Interval interval;
     Date date;
 
-    // Creating enum for TIME_SERIES selection
-    public enum TimeFrame {
-        INTRADAY {
-            public String toString() {
-                return "TIME_SERIES_INTRADAY";
-            }
-        },
-        DAILY {
-            public String toString() {
-                return "TIME_SERIES_DAILY";
-            }
-        },
-        WEEKLY {
-            public String toString() {
-                return "TIME_SERIES_WEEKLY";
-            }
-        },
-        MONTHLY {
-            public String toString() {
-                return "TIME_SERIES_MONTHLY";
-            }
-        }
-    }
-
-    // Creating enum for Time interval (only applicable to INTRADAY)
-    public enum Interval {
-        ONE {
-            public String toString() {
-                return "1min";
-            }
-        },
-        FIVE {
-            public String toString() {
-                return "5min";
-            }
-        },
-        FIFTEEN {
-            public String toString() {
-                return "15min";
-            }
-        },
-        THIRTY {
-            public String toString() {
-                return "30min";
-            }
-        },
-        SIXTY {
-            public String toString() {
-                return "60min";
-            }
-        }
-    }
-
     // constructor
     public StockChartData(TimeFrame timeSeries, String symbol, Interval interval) {
         this.timeSeries = timeSeries;

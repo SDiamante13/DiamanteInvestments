@@ -122,7 +122,7 @@ public class CandleStick extends JFrame implements ChartMouseListener{
 			public void itemStateChanged(ItemEvent arg0) {
 				try {
 				clearPlot();
-				createContent(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.FIVE);
+				createContent(TimeFrame.INTRADAY, symbolName, Interval.FIVE);
 				}
 				catch(Exception e) {
 					JOptionPane.showMessageDialog(null, "Error in retrieving chart: INTRADAY charts are currently unavailable.");
@@ -136,7 +136,7 @@ public class CandleStick extends JFrame implements ChartMouseListener{
 			public void itemStateChanged(ItemEvent arg0) {
 				try {
 				clearPlot();
-				createContent(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.THIRTY);
+				createContent(TimeFrame.INTRADAY, symbolName, Interval.THIRTY);
 				}
 				catch(Exception e) {
 					JOptionPane.showMessageDialog(null, "Error in retrieving chart: INTRADAY charts are currently unavailable.");
@@ -150,7 +150,7 @@ public class CandleStick extends JFrame implements ChartMouseListener{
 			public void itemStateChanged(ItemEvent arg0) {
 				try {
 				clearPlot();
-				createContent(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.FIFTEEN);
+				createContent(TimeFrame.INTRADAY, symbolName, Interval.FIFTEEN);
 				}
 				catch(Exception e) {
 					JOptionPane.showMessageDialog(null, "Error in retrieving chart: INTRADAY charts are currently unavailable.");
@@ -164,7 +164,7 @@ public class CandleStick extends JFrame implements ChartMouseListener{
 			public void itemStateChanged(ItemEvent arg0) {
 				try {
 				clearPlot();
-				createContent(StockChartData.TimeFrame.INTRADAY, symbolName, StockChartData.Interval.SIXTY);
+				createContent(TimeFrame.INTRADAY, symbolName, Interval.SIXTY);
 				}
 				catch(Exception e) {
 					JOptionPane.showMessageDialog(null, "Error in retrieving chart: Intraday charts are currently unavailable.");
@@ -178,7 +178,7 @@ public class CandleStick extends JFrame implements ChartMouseListener{
 			public void itemStateChanged(ItemEvent arg0) {
 				try {
 				clearPlot();
-				createContent(StockChartData.TimeFrame.DAILY, symbolName, StockChartData.Interval.FIVE);
+				createContent(TimeFrame.DAILY, symbolName, Interval.FIVE);
 				}
 				catch(Exception e) {
 					JOptionPane.showMessageDialog(null, "An error occured in displaying the daily chart.");
@@ -192,7 +192,7 @@ public class CandleStick extends JFrame implements ChartMouseListener{
 			public void itemStateChanged(ItemEvent arg0) {
 				try {
 				clearPlot();
-				createContent(StockChartData.TimeFrame.WEEKLY, symbolName, StockChartData.Interval.FIVE);
+				createContent(TimeFrame.WEEKLY, symbolName, Interval.FIVE);
 				}
 				catch(Exception e) {
 					JOptionPane.showMessageDialog(null, "An error occured in displaying the weekly chart.");
@@ -206,7 +206,7 @@ public class CandleStick extends JFrame implements ChartMouseListener{
 			public void itemStateChanged(ItemEvent arg0) {
 				try {
 				clearPlot();
-				createContent(StockChartData.TimeFrame.MONTHLY, symbolName, StockChartData.Interval.FIVE);
+				createContent(TimeFrame.MONTHLY, symbolName, Interval.FIVE);
 				}
 				catch(Exception e) {
 					JOptionPane.showMessageDialog(null, "An error occured in displaying the monthly chart.");
@@ -245,7 +245,7 @@ public class CandleStick extends JFrame implements ChartMouseListener{
 		return contentPane;
 	}
 
-			public void createContent(StockChartData.TimeFrame timeF, String symbol, StockChartData.Interval interval) {
+			public void createContent(TimeFrame timeF, String symbol, Interval interval) {
 				try {					
 					/*Grab the stock data from the Alpha Vantage API*/
 					StockChartData stockData= new StockChartData(timeF, symbol, interval);
@@ -271,23 +271,23 @@ public class CandleStick extends JFrame implements ChartMouseListener{
 		        SimpleDateFormat customDateFormat = new SimpleDateFormat("MMM");;
 		        // Set dateFormat depending on TimeSeries
 		        String dateFormat = "MMM-dd";;
-		        if(stockData.getTimeFrame() == StockChartData.TimeFrame.MONTHLY) {
+		        if(stockData.getTimeFrame() == TimeFrame.MONTHLY) {
 		        	tickUnit = new DateTickUnit(DateTickUnit.MONTH, 9);
 		        	dateFormat = "yyyy-MMM";
 		        	customDateFormat = new SimpleDateFormat(dateFormat);
 		        }
-		        else if(stockData.getTimeFrame() == StockChartData.TimeFrame.WEEKLY) {
+		        else if(stockData.getTimeFrame() == TimeFrame.WEEKLY) {
 		        	tickUnit = new DateTickUnit(DateTickUnit.MONTH, 8);
 		        	dateFormat = "MMM-YYYY";
 		        	customDateFormat = new SimpleDateFormat(dateFormat);
 		            }
-		        else if(stockData.getTimeFrame() == StockChartData.TimeFrame.DAILY){
+		        else if(stockData.getTimeFrame() == TimeFrame.DAILY){
 		        	tickUnit = new DateTickUnit(DateTickUnit.DAY, 20);
 		        	dateFormat = "MMM-dd";
 		        	customDateFormat = new SimpleDateFormat(dateFormat);
 		        	
 		        }
-		        else if(stockData.getTimeFrame() == StockChartData.TimeFrame.INTRADAY) { // set Intraday custom dateformats and tick units
+		        else if(stockData.getTimeFrame() == TimeFrame.INTRADAY) { // set Intraday custom dateformats and tick units
 		        	switch(stockData.getInterval()) {
 		        	case ONE:		tickUnit = new DateTickUnit(DateTickUnit.MINUTE, 10);
 		        					dateFormat = "HH:mm:ss";
@@ -317,7 +317,7 @@ public class CandleStick extends JFrame implements ChartMouseListener{
 		        	}
 
 		        // for intraday
-		        if(stockData.getTimeFrame()==StockChartData.TimeFrame.INTRADAY) {
+		        if(stockData.getTimeFrame()== TimeFrame.INTRADAY) {
 		        	 SegmentedTimeline fifteenTimeline = SegmentedTimeline.newFifteenMinuteTimeline(); /* This sets the timeline as a Mon-Fri 9am-4pm timeframe*/
 		        	 domainAxis.setTimeline(fifteenTimeline);
 		        }
