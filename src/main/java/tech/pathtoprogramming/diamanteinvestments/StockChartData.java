@@ -7,12 +7,12 @@ import java.util.*;
 
 public class StockChartData {
 
-    private final Deque<Date> dates;
-    private final Deque<Double> opens;
-    private final Deque<Double> highs;
-    private final Deque<Double> lows;
-    private final Deque<Double> closes;
-    private final Deque<Double> volumes;
+    private final Deque<Date> dates = new ArrayDeque<>();
+    private final Deque<Double> opens = new ArrayDeque<>();
+    private final Deque<Double> highs = new ArrayDeque<>();
+    private final Deque<Double> lows = new ArrayDeque<>();
+    private final Deque<Double> closes = new ArrayDeque<>();
+    private final Deque<Double> volumes = new ArrayDeque<>();
     private final TimeFrame timeSeries;
     private final Interval interval;
     Date date;
@@ -20,22 +20,6 @@ public class StockChartData {
     public StockChartData(TimeFrame timeSeries, String symbol, Interval interval) {
         this.timeSeries = timeSeries;
         this.interval = interval;
-
-        dates = new ArrayDeque<>();
-        opens = new ArrayDeque<>();
-        highs = new ArrayDeque<>();
-        lows = new ArrayDeque<>();
-        closes = new ArrayDeque<>();
-        volumes = new ArrayDeque<>();
-        int target;
-        int year;
-        int month;
-        int day;
-        int hour;
-        int min;
-        int sec;
-        int start;
-        String tempPrice;
 
         String url = "https://www.alphavantage.co/query?function=" + this.timeSeries
                 + "&symbol=" + symbol
@@ -55,13 +39,14 @@ public class StockChartData {
                 NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
                 String line = input.nextLine();
                 // push dates
-                target = line.indexOf('-');
+                int target = line.indexOf('-');
                 // Grab year
-                year = Integer.parseInt(line.substring(0, target));
+                int year = Integer.parseInt(line.substring(0, target));
                 // Grab month
-                start = target++ + 1;
+                int start = target++ + 1;
                 target = line.indexOf('-', target);
-                month = Integer.parseInt(line.substring(start, target));
+                int month = Integer.parseInt(line.substring(start, target));
+                int day;
                 if (timeSeries != TimeFrame.INTRADAY) {
                     // Grab day for timeseries other than INTRADAY
                     start = target++ + 1;
@@ -77,13 +62,13 @@ public class StockChartData {
                 if (timeSeries == TimeFrame.INTRADAY) {
                     start = target++ + 1;
                     target = line.indexOf(':', target);
-                    hour = Integer.parseInt(line.substring(start, target));
+                    int hour = Integer.parseInt(line.substring(start, target));
                     start = target++ + 1;
                     target = line.indexOf(':', target);
-                    min = Integer.parseInt(line.substring(start, target));
+                    int min = Integer.parseInt(line.substring(start, target));
                     start = target++ + 1;
                     target = line.indexOf(',', target);
-                    sec = Integer.parseInt(line.substring(start, target));
+                    int sec = Integer.parseInt(line.substring(start, target));
                     date = new Date(year, month, day, hour, min, sec);
                 } else {
                     date = new Date(year, month, day);
@@ -94,7 +79,7 @@ public class StockChartData {
                 start = target++ + 1;
                 target = line.indexOf(",", target);
                 // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-                tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
+                String tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
                 tempPrice = tempPrice.substring(1); // trim off $
                 opens.addLast(Double.parseDouble(tempPrice));
 
