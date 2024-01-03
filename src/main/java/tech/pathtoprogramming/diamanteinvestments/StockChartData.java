@@ -97,42 +97,41 @@ public class StockChartData {
         // addLast open prices
         start = fromIndex++ + 1;
         fromIndex = indexOf(line, fromIndex, ",");
-        // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-        String tempPrice = getFormattedPrice(line, currencyFormatter, fromIndex, start);
-        tempPrice = getSubstring(tempPrice); // trim off $
-        opens.addLast(Double.parseDouble(tempPrice));
+        double open = getPrice(line, currencyFormatter, fromIndex, start);
+        opens.addLast(open);
 
         // addLast high prices
         start = fromIndex++ + 1;
         fromIndex = indexOf(line, fromIndex, ",");
-        // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-        tempPrice = getFormattedPrice(line, currencyFormatter, fromIndex, start);
-        tempPrice = getSubstring(tempPrice); // trim off $
-        highs.addLast(Double.parseDouble(tempPrice));
+        double high = getPrice(line, currencyFormatter, fromIndex, start);
+        highs.addLast(high);
 
         // addLast low prices
         start = fromIndex++ + 1;
         fromIndex = indexOf(line, fromIndex, ",");
         // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-        tempPrice = getFormattedPrice(line, currencyFormatter, fromIndex, start);
-        tempPrice = getSubstring(tempPrice); // trim off $
-        lows.addLast(Double.parseDouble(tempPrice));
+        double low = getPrice(line, currencyFormatter, fromIndex, start);
+        lows.addLast(low);
 
         // addLast close prices
         start = fromIndex++ + 1;
-        double close = getSubstringForClosePrices(
-                line,
-                currencyFormatter,
-                indexOf(line, fromIndex + 1, ","),
-                start);
+        fromIndex = indexOf(line, fromIndex, ",");
+        double close = getPrice(line, currencyFormatter, fromIndex, start);
         closes.addLast(close);
 
         double volume = parseVolume(line, indexOf(line, fromIndex, ",") + 1);
         volumes.addLast(volume);
     }
 
-    private String getSubstring(String tempPrice) {
-        return tempPrice.substring(1);
+    private double getPrice(String line, NumberFormat currencyFormatter, int fromIndex, int start) {
+        return Double.parseDouble(trimDollarSign(getFormattedPrice(
+                        line, currencyFormatter, fromIndex, start)
+                )
+        );
+    }
+
+    private String trimDollarSign(String price) {
+        return price.substring(1);
     }
 
     private String getFormattedPrice(
@@ -142,12 +141,6 @@ public class StockChartData {
 
     private int indexOf(String line, int target, String delimiter) {
         return line.indexOf(delimiter, target);
-    }
-
-    private double getSubstringForClosePrices(String line, NumberFormat currencyFormatter, int target, int start) {
-        // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-        double close = Double.parseDouble(line.substring(start, target));
-        return Double.parseDouble(getSubstring(currencyFormatter.format(close)));
     }
 
     private double parseVolume(String line, int start) {
