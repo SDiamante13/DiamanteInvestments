@@ -128,15 +128,13 @@ public class StockChartData {
 
         closes.addLast(close);
 
-        double volume = parseVolume(line, target);
+        double volume = parseVolume(line, target + 1);
         volumes.addLast(volume);
     }
 
-    private double parseVolume(String line, int target) {
-        int start;
-        start = target++ + 1;
-        target = line.length() - 1;
-        return Double.parseDouble(line.substring(start, target));
+    private double parseVolume(String line, int start) {
+        String volume = line.substring(start, line.length() - 1);
+        return Double.parseDouble(volume);
     }
 
     public Deque<Date> getDates() {
