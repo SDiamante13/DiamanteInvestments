@@ -20,7 +20,6 @@ public class StockChartData {
     private Interval interval;
     Date date;
 
-    // constructor
     public StockChartData(TimeFrame timeSeries, String symbol, Interval interval) {
         this.timeSeries = timeSeries;
         this.symbol = symbol;
@@ -37,14 +36,12 @@ public class StockChartData {
         int start = 0;
         String tempPrice = "0";
 
-
         String url = "https://www.alphavantage.co/query?function=" + this.timeSeries
                 + "&symbol=" + this.symbol
                 + "&interval=" + this.interval
                 + "&apikey=NKNKJCBRLYI9H5SO&datatype=csv";
 
         // Alpha Advantage returns a csv file with dates, opens, highs, lows, closes, volumes
-
         try {
             URL alphaAdvantage = new URL(url);
             URLConnection data = alphaAdvantage.openConnection();
@@ -90,9 +87,7 @@ public class StockChartData {
                 } else {
                     date = new Date(year, month, day);
                 }
-                //2018-02-16 00:00:00,
                 dates.push(date);
-
 
                 // push open prices
                 start = target++ + 1;
@@ -164,10 +159,6 @@ public class StockChartData {
 
     public TimeFrame getTimeFrame() {
         return timeSeries;
-    }
-
-    public String getSymbol() {
-        return symbol;
     }
 
     public Interval getInterval() {
