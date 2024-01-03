@@ -97,7 +97,7 @@ public class StockChartData {
         // addLast open prices
         start = fromIndex++ + 1;
         fromIndex = indexOf(line, fromIndex, ",");
-        double open = getPrice(line, currencyFormatter, fromIndex, start);
+        double open = Double.parseDouble(line.split(",")[1]);
         opens.addLast(open);
 
         // addLast high prices
@@ -134,10 +134,10 @@ public class StockChartData {
         return price.substring(1);
     }
 
-    private String getFormattedPrice(
-            String line, NumberFormat currencyFormatter, int fromIndex, int start) {
+    private String getFormattedPrice(String line, NumberFormat currencyFormatter, int fromIndex, int start) {
         return currencyFormatter.format(Double.parseDouble(line.substring(start, fromIndex)));
     }
+
 
     private int indexOf(String line, int target, String delimiter) {
         return line.indexOf(delimiter, target);
