@@ -96,7 +96,7 @@ public class StockChartData {
 
         // addLast open prices
         start = target++ + 1;
-        target = line.indexOf(",", target);
+        target = getTarget(line, target);
         // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
         String tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
         tempPrice = tempPrice.substring(1); // trim off $
@@ -104,7 +104,7 @@ public class StockChartData {
 
         // addLast high prices
         start = target++ + 1;
-        target = line.indexOf(",", target);
+        target = getTarget(line, target);
         // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
         tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
         tempPrice = tempPrice.substring(1); // trim off $
@@ -112,7 +112,7 @@ public class StockChartData {
 
         // addLast low prices
         start = target++ + 1;
-        target = line.indexOf(",", target);
+        target = getTarget(line, target);
         // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
         tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
         tempPrice = tempPrice.substring(1); // trim off $
@@ -120,16 +120,25 @@ public class StockChartData {
 
         // addLast close prices
         start = target++ + 1;
-        target = line.indexOf(",", target);
+        target = getTarget(line, target);
         // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
-        tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
-        tempPrice = tempPrice.substring(1); // trim off $
-        double close = Double.parseDouble(tempPrice);
+        String closeString = getSubstringForClosePrices(line, currencyFormatter, target, start);
+        double close = Double.parseDouble(closeString);
 
         closes.addLast(close);
 
         double volume = parseVolume(line, target + 1);
         volumes.addLast(volume);
+    }
+
+    private int getTarget(String line, int target) {
+        return line.indexOf(",", target);
+    }
+
+    private String getSubstringForClosePrices(String line, NumberFormat currencyFormatter, int target, int start) {
+        double close = Double.parseDouble(line.substring(start, target));
+        return currencyFormatter.format(close)
+                .substring(1);
     }
 
     private double parseVolume(String line, int start) {
