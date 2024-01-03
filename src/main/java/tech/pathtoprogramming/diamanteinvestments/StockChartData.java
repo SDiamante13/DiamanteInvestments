@@ -3,18 +3,16 @@ package tech.pathtoprogramming.diamanteinvestments;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.NumberFormat;
-import java.util.Date;
-import java.util.Scanner;
-import java.util.Stack;
+import java.util.*;
 
 public class StockChartData {
 
-    private final Stack<Date> dates;
-    private final Stack<Double> opens;
-    private final Stack<Double> highs;
-    private final Stack<Double> lows;
-    private final Stack<Double> closes;
-    private final Stack<Double> volumes;
+    private final Deque<Date> dates;
+    private final Deque<Double> opens;
+    private final Deque<Double> highs;
+    private final Deque<Double> lows;
+    private final Deque<Double> closes;
+    private final Deque<Double> volumes;
     private final TimeFrame timeSeries;
     private final Interval interval;
     Date date;
@@ -23,12 +21,12 @@ public class StockChartData {
         this.timeSeries = timeSeries;
         this.interval = interval;
 
-        dates = new Stack<>();
-        opens = new Stack<>();
-        highs = new Stack<>();
-        lows = new Stack<>();
-        closes = new Stack<>();
-        volumes = new Stack<>();
+        dates = new ArrayDeque<>();
+        opens = new ArrayDeque<>();
+        highs = new ArrayDeque<>();
+        lows = new ArrayDeque<>();
+        closes = new ArrayDeque<>();
+        volumes = new ArrayDeque<>();
         int target;
         int year;
         int month;
@@ -90,44 +88,44 @@ public class StockChartData {
                 } else {
                     date = new Date(year, month, day);
                 }
-                dates.push(date);
+                dates.addLast(date);
 
-                // push open prices
+                // addLast open prices
                 start = target++ + 1;
                 target = line.indexOf(",", target);
                 // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
                 tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
                 tempPrice = tempPrice.substring(1); // trim off $
-                opens.push(Double.parseDouble(tempPrice));
+                opens.addLast(Double.parseDouble(tempPrice));
 
-                // push high prices
+                // addLast high prices
                 start = target++ + 1;
                 target = line.indexOf(",", target);
                 // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
                 tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
                 tempPrice = tempPrice.substring(1); // trim off $
-                highs.push(Double.parseDouble(tempPrice));
+                highs.addLast(Double.parseDouble(tempPrice));
 
-                // push low prices
+                // addLast low prices
                 start = target++ + 1;
                 target = line.indexOf(",", target);
                 // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
                 tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
                 tempPrice = tempPrice.substring(1); // trim off $
-                lows.push(Double.parseDouble(tempPrice));
+                lows.addLast(Double.parseDouble(tempPrice));
 
-                // push close prices
+                // addLast close prices
                 start = target++ + 1;
                 target = line.indexOf(",", target);
                 // The purpose of this is to trim the trailing zeros i.e. 258.5800 --> $258.58 --> 258.58
                 tempPrice = currencyFormatter.format(Double.parseDouble(line.substring(start, target)));
                 tempPrice = tempPrice.substring(1); // trim off $
-                closes.push(Double.parseDouble(tempPrice));
+                closes.addLast(Double.parseDouble(tempPrice));
 
-                // push volumes
+                // addLast volumes
                 start = target++ + 1;
                 target = line.length() - 1;
-                volumes.push(Double.parseDouble(line.substring(start, target)));
+                volumes.addLast(Double.parseDouble(line.substring(start, target)));
             }
 
             input.close();
@@ -136,27 +134,27 @@ public class StockChartData {
         }
     }
 
-    public Stack<Date> getDates() {
+    public Deque<Date> getDates() {
         return dates;
     }
 
-    public Stack<Double> getOpens() {
+    public Deque<Double> getOpens() {
         return opens;
     }
 
-    public Stack<Double> getHighs() {
+    public Deque<Double> getHighs() {
         return highs;
     }
 
-    public Stack<Double> getLows() {
+    public Deque<Double> getLows() {
         return lows;
     }
 
-    public Stack<Double> getCloses() {
+    public Deque<Double> getCloses() {
         return closes;
     }
 
-    public Stack<Double> getVolumes() {
+    public Deque<Double> getVolumes() {
         return volumes;
     }
 
