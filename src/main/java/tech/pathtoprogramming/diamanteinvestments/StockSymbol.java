@@ -46,7 +46,8 @@ public class StockSymbol {
 
             String line = doc.select("li.kv__item").toString();
             open = parseOpen(line);
-            parseLowAndHighAndAssignInstanceVariables(line);
+            low = parseLow(line);
+            high = parseHigh(line);
             yearlyLow = parseYearlyLow(line);
             yearlyHigh = parseYearlyHigh(line);
             marketCap = parseMarketCap(line);
@@ -124,27 +125,26 @@ public class StockSymbol {
         return line.substring(start + 1, deci + 3);
     }
 
-    private void parseLowAndHighAndAssignInstanceVariables(String line) {
-        int start;
-        int target;
-        int deci;
-        //------------------------------------------
-        // Find low and high of the stock
-        target = line.indexOf("Day Range");
-        deci = getIndexOfDecimal(line, target);
-        start = deci;
-        int index = deci + 1;
+    private String parseLow(String line) {
+        int start = getIndexOfDecimal(line, getIndexOfDayRange(line));
         while (line.charAt(start) != '>') {
             start--;
         }
-        low = line.substring(start + 1, deci + 3);
-        // Find the decimal of the high
+        return line.substring(start + 1, getIndexOfDecimal(line, getIndexOfDayRange(line)) + 3);
+    }
+
+    private String parseHigh(String line) {
+        int index = getIndexOfDecimal(line, getIndexOfDayRange(line)) + 1;
         index = getIndexOfDecimal(line, index);
         int start2 = index;
         while (line.charAt(start2) != '-') {
             start2--;
         }
-        high = line.substring(start2 + 1, index + 3);
+        return line.substring(start2 + 1, index + 3);
+    }
+
+    private int getIndexOfDayRange(String line) {
+        return line.indexOf("Day Range");
     }
 
     private String parseYearlyLow(String line) {
