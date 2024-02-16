@@ -157,26 +157,7 @@ public class StockSymbol {
             }
             yearlyHigh = line.substring(start2 + 1, index + 3);
 
-            //------------------------------------------
-            // Find the Market Cap
-            target = line.indexOf("Market Cap");
-            deci = line.indexOf(".", target);
-            start = deci;
-            if (deci - target > 200) { // ETFs will show N/A
-                marketCap = "N/A";
-            } else {
-                while (line.charAt(start) != '$') {
-                    start--;
-                }
-                marketCap = line.substring(start + 1, deci + 4); // increased length to get the B, M, or K
-                if (marketCap.endsWith("<")) {
-                    marketCap = marketCap.substring(0, marketCap.length() - 2);
-                }
-                if (!marketCap.endsWith("B") && !marketCap.endsWith("M") && !marketCap.endsWith("K")) {
-                    marketCap = "N/A";
-                }
-            }
-
+            marketCap = parseMarketCap(line);
             peRatio = parsePERatio(line);
             eps = parseEarningPerShare(line);
             floatShorted = parsePercentageFloatShorted(line);
@@ -190,6 +171,26 @@ public class StockSymbol {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private String parseMarketCap(String line) {
+        int target = line.indexOf("Market Cap");
+        int deci = line.indexOf(".", target);
+        int start = deci;
+        if (deci - target > 200) { // ETFs will show N/A
+            return "N/A";
+        }
+        while (line.charAt(start) != '$') {
+            start--;
+        }
+        String result = line.substring(start + 1, deci + 4); // increased length to get the B, M, or K
+        if (result.endsWith("<")) {
+            result = result.substring(0, result.length() - 2);
+        }
+        if (!result.endsWith("B") && !result.endsWith("M") && !result.endsWith("K")) {
+            result = "N/A";
+        }
+        return result;
     }
 
     private String parsePERatio(String line) {
