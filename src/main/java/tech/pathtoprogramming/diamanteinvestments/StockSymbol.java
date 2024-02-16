@@ -177,18 +177,7 @@ public class StockSymbol {
                 }
             }
 
-            //------------------------------------------
-            // Find the P/E Ratio
-            target = line.indexOf("P/E Ratio");
-            deci = line.indexOf(".", target);
-            start = deci;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            if ((deci - target) < 70) { // if N/A then keep P/E as N/A
-                peRatio = line.substring(start + 1, deci + 3);
-            }
-
+            peRatio = parsePERatio(line);
             eps = parseEarningPerShare(line);
             floatShorted = parsePercentageFloatShorted(line);
             averageVolume = parseAverageVolume(line);
@@ -201,6 +190,18 @@ public class StockSymbol {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private String parsePERatio(String line) {
+        int target = line.indexOf("P/E Ratio");
+        int deci = line.indexOf(".", target);
+        int start = deci;
+        while (line.charAt(start) != '>') {
+            start--;
+        }
+        return (deci - target) < 70 ?
+                line.substring(start + 1, deci + 3) :
+                "N/A";
     }
 
     private String parseEarningPerShare(String line) {
