@@ -4,9 +4,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.NumberFormat;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class StockSymbol {
@@ -35,9 +37,7 @@ public class StockSymbol {
 
     public StockSymbol(String symbol) {
         try {
-
             Document doc = Jsoup.connect("https://www.marketwatch.com/investing/stock/" + symbol).get();
-
 
             //------------------------------------------
             // Find the stock name
@@ -241,57 +241,7 @@ public class StockSymbol {
             volume = line.substring(start + 1, deci + 4); // increased length to get the B, M, or K
 
 
-            //-------------------------------------------------------------------------------------
-            // Calculate 50 day and 100 day moving averages
-            String alphaUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY"
-                    + "&symbol=" + symbol
-                    + "&apikey=NKNKJCBRLYI9H5SO&datatype=csv";
-            URL alphaAdvantage = new URL(alphaUrl);
-            URLConnection data = alphaAdvantage.openConnection();
-            Scanner input = new Scanner(data.getInputStream());
-            if (input.hasNext()) { // skip header line
-                input.nextLine();
-            }
-            double closeValues[] = new double[100];
-            int x = 0, count = 0;
-            double sum50 = 0, sum100 = 0, fiftyAvg, hundredAvg;
-            int aTarget, aDeci, aStart;
-            String aClose;
-            while (input.hasNextLine()) {
-                String aLine = input.nextLine();
-                aTarget = aLine.lastIndexOf(",");
-                aDeci = aTarget - 5; // move target to the decimal point
-                aStart = aDeci;
-                while (aLine.charAt(aStart) != ',') {
-                    aStart--;
-                }
-                aClose = aLine.substring(aStart + 1, aDeci + 3);
-                closeValues[x] = Double.parseDouble(aClose); // convert String to int and store into array
-                x++;
-            }
-            for (double cV : closeValues) {
-                if (count < 50) {
-                    sum50 += cV;
-                } else if (count >= 50) {
-                    sum100 += cV;
-                }
-                count++;
-            }
-            fiftyAvg = sum50 / 50;
-            // trim to 2 decimal places
-            String temp = "0";
-            NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
-            temp = currencyFormatter.format(fiftyAvg);
-            temp = temp.substring(1, temp.length()); // trim off $
-            fiftyDayMA = temp;
-            // trim to 2 decimal places
-            sum100 += sum50;
-            hundredAvg = sum100 / closeValues.length;
-            // trim to 2 decimal places
-            temp = currencyFormatter.format(hundredAvg);
-            temp = temp.substring(1, temp.length()); // trim off $
-            hundredDayMA = temp;
-            input.close();
+            callAlphaAdvantageAPIAndSet50DayAnd100DayMovingAverages(symbol);
 
             String urlIcon = "";
 
@@ -303,6 +253,60 @@ public class StockSymbol {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    protected void callAlphaAdvantageAPIAndSet50DayAnd100DayMovingAverages(String symbol) throws IOException {
+        //-------------------------------------------------------------------------------------
+        // Calculate 50 day and 100 day moving averages
+        String alphaUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY"
+                + "&symbol=" + symbol
+                + "&apikey=NKNKJCBRLYI9H5SO&datatype=csv";
+        URL alphaAdvantage = new URL(alphaUrl);
+        URLConnection data = alphaAdvantage.openConnection();
+        Scanner input = new Scanner(data.getInputStream());
+        if (input.hasNext()) { // skip header line
+            input.nextLine();
+        }
+        double closeValues[] = new double[100];
+        int x = 0, count = 0;
+        double sum50 = 0, sum100 = 0, fiftyAvg, hundredAvg;
+        int aTarget, aDeci, aStart;
+        String aClose;
+        while (input.hasNextLine()) {
+            String aLine = input.nextLine();
+            aTarget = aLine.lastIndexOf(",");
+            aDeci = aTarget - 5; // move target to the decimal point
+            aStart = aDeci;
+            while (aLine.charAt(aStart) != ',') {
+                aStart--;
+            }
+            aClose = aLine.substring(aStart + 1, aDeci + 3);
+            closeValues[x] = Double.parseDouble(aClose); // convert String to int and store into array
+            x++;
+        }
+        for (double cV : closeValues) {
+            if (count < 50) {
+                sum50 += cV;
+            } else if (count >= 50) {
+                sum100 += cV;
+            }
+            count++;
+        }
+        fiftyAvg = sum50 / 50;
+        // trim to 2 decimal places
+        String temp = "0";
+        NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
+        temp = currencyFormatter.format(fiftyAvg);
+        temp = temp.substring(1, temp.length()); // trim off $
+        fiftyDayMA = temp;
+        // trim to 2 decimal places
+        sum100 += sum50;
+        hundredAvg = sum100 / closeValues.length;
+        // trim to 2 decimal places
+        temp = currencyFormatter.format(hundredAvg);
+        temp = temp.substring(1, temp.length()); // trim off $
+        hundredDayMA = temp;
+        input.close();
     }
 
     public String getStockName() {
@@ -383,5 +387,84 @@ public class StockSymbol {
 
     public URL getIconUrl() {
         return iconUrl;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        StockSymbol that = (StockSymbol) o;
+
+        if (!Objects.equals(stockName, that.stockName)) return false;
+        if (!Objects.equals(price, that.price)) return false;
+        if (!Objects.equals(change, that.change)) return false;
+        if (!Objects.equals(changePercent, that.changePercent))
+            return false;
+        if (!Objects.equals(close, that.close)) return false;
+        if (!Objects.equals(open, that.open)) return false;
+        if (!Objects.equals(low, that.low)) return false;
+        if (!Objects.equals(high, that.high)) return false;
+        if (!Objects.equals(yearlyLow, that.yearlyLow)) return false;
+        if (!Objects.equals(yearlyHigh, that.yearlyHigh)) return false;
+        if (!Objects.equals(marketCap, that.marketCap)) return false;
+        if (!Objects.equals(peRatio, that.peRatio)) return false;
+        if (!Objects.equals(eps, that.eps)) return false;
+        if (!Objects.equals(floatShorted, that.floatShorted)) return false;
+        if (!Objects.equals(volume, that.volume)) return false;
+        if (!Objects.equals(averageVolume, that.averageVolume))
+            return false;
+        if (!Objects.equals(fiftyDayMA, that.fiftyDayMA)) return false;
+        if (!Objects.equals(hundredDayMA, that.hundredDayMA)) return false;
+        return Objects.equals(iconUrl, that.iconUrl);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = stockName != null ? stockName.hashCode() : 0;
+        result = 31 * result + (price != null ? price.hashCode() : 0);
+        result = 31 * result + (change != null ? change.hashCode() : 0);
+        result = 31 * result + (changePercent != null ? changePercent.hashCode() : 0);
+        result = 31 * result + (close != null ? close.hashCode() : 0);
+        result = 31 * result + (open != null ? open.hashCode() : 0);
+        result = 31 * result + (low != null ? low.hashCode() : 0);
+        result = 31 * result + (high != null ? high.hashCode() : 0);
+        result = 31 * result + (yearlyLow != null ? yearlyLow.hashCode() : 0);
+        result = 31 * result + (yearlyHigh != null ? yearlyHigh.hashCode() : 0);
+        result = 31 * result + (marketCap != null ? marketCap.hashCode() : 0);
+        result = 31 * result + (peRatio != null ? peRatio.hashCode() : 0);
+        result = 31 * result + (eps != null ? eps.hashCode() : 0);
+        result = 31 * result + (floatShorted != null ? floatShorted.hashCode() : 0);
+        result = 31 * result + (volume != null ? volume.hashCode() : 0);
+        result = 31 * result + (averageVolume != null ? averageVolume.hashCode() : 0);
+        result = 31 * result + (fiftyDayMA != null ? fiftyDayMA.hashCode() : 0);
+        result = 31 * result + (hundredDayMA != null ? hundredDayMA.hashCode() : 0);
+        result = 31 * result + (iconUrl != null ? iconUrl.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "StockSymbol{" +
+                "stockName='" + stockName + '\'' +
+                ", price='" + price + '\'' +
+                ", change='" + change + '\'' +
+                ", changePercent='" + changePercent + '\'' +
+                ", close='" + close + '\'' +
+                ", open='" + open + '\'' +
+                ", low='" + low + '\'' +
+                ", high='" + high + '\'' +
+                ", yearlyLow='" + yearlyLow + '\'' +
+                ", yearlyHigh='" + yearlyHigh + '\'' +
+                ", marketCap='" + marketCap + '\'' +
+                ", peRatio='" + peRatio + '\'' +
+                ", eps='" + eps + '\'' +
+                ", floatShorted='" + floatShorted + '\'' +
+                ", volume='" + volume + '\'' +
+                ", averageVolume='" + averageVolume + '\'' +
+                ", fiftyDayMA='" + fiftyDayMA + '\'' +
+                ", hundredDayMA='" + hundredDayMA + '\'' +
+                ", iconUrl=" + iconUrl +
+                '}';
     }
 }
