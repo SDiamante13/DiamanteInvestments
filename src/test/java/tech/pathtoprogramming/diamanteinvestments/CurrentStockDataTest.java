@@ -54,6 +54,16 @@ public class CurrentStockDataTest {
     }
 
     @Test
+    public void parseChangeInDollarsDuringTradingHours() {
+        CurrentStockData currentStockData = new CurrentStockData(null,
+                null,
+                "<span class=\"change--point--q\">\n <bg-quote field=\"change\" format=\"0,0.00\" " +
+                        "channel=\"/zigman2/quotes/202934861/composite\">\n  0.69\n </bg-quote></span>", null, null, null);
+
+        assertThat(currentStockData.parseChangeInDollars()).isEqualTo("0.69");
+    }
+
+    @Test
     public void parseChangeInPercentage() {
         CurrentStockData currentStockData = new CurrentStockData(null,
                 null, null,
