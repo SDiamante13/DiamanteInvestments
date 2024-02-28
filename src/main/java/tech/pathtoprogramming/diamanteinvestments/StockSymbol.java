@@ -7,17 +7,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.NumberFormat;
-import java.util.Objects;
 import java.util.Scanner;
 
 public class StockSymbol {
 
-    private String stockName = "not found";
-    private String price = "not found";
-    private String change = "not found";
-    private String changePercent = "not found";
+    private CurrentStockData currentStockData;
 
-    private String close = "not found";
     private String open = "not found";
     private String low = "not found";
     private String high = "not found";
@@ -41,12 +36,13 @@ public class StockSymbol {
     public StockSymbol(String symbol) {
         try {
             Document doc = Jsoup.connect("https://www.marketwatch.com/investing/stock/" + symbol).get();
-
-            stockName = parseStockName(doc.select("h1.company__name").toString());
-            price = parsePrice(doc.select("div.intraday__data").toString());
-            change = parseChangeInDollars(doc.select("span.change--point--q").toString());
-            changePercent = parseChangePercent(doc.select("span.change--percent--q").toString());
-            close = parseClose(doc.select("tbody.remove-last-border").toString());
+            String stockNameHtml = doc.select("h1.company__name").toString();
+            String priceHtml = doc.select("div.intraday__data").toString();
+            String changeInDollarsHtml = doc.select("span.change--point--q").toString();
+            String changePercentHtml = doc.select("span.change--percent--q").toString();
+            String closeHtml = doc.select("tbody.remove-last-border").toString();
+            String volumeHtml = doc.select("div.range__header").toString();
+            currentStockData = new CurrentStockData(stockNameHtml, priceHtml, changeInDollarsHtml, changePercentHtml, closeHtml, volumeHtml);
 
             String line = doc.select("li.kv__item").toString();
             open = parseOpen(line);
@@ -60,7 +56,6 @@ public class StockSymbol {
             floatShorted = parsePercentageFloatShorted(line);
             averageVolume = parseAverageVolume(line);
 
-            volume = parseVolume(doc.select("div.range__header").toString());
 
             double[] closeValues = callApiAndParseCloseValues(symbol);
             CloseValueSums closeValueSums = getCloseValueSums(closeValues);
@@ -72,56 +67,6 @@ public class StockSymbol {
         } catch (Exception e) {
             System.out.println(e);
         }
-    }
-
-    private String parseStockName(String stockNameHtml) {
-        int target = stockNameHtml.indexOf("name");
-        int deci = stockNameHtml.indexOf(">", target);
-        int end = stockNameHtml.indexOf("<", deci);
-        if (stockNameHtml.isEmpty()) {
-            throw new IllegalArgumentException("The stock symbol is invalid");
-        }
-        return stockNameHtml.substring(deci + 1, end);
-    }
-
-    private String parsePrice(String priceHtml) {
-        int target = priceHtml.indexOf("lastsale");
-        int deci = getIndexOfDecimal(priceHtml, target);
-        int start = deci;
-        while (priceHtml.charAt(start) != '>') {
-            start--;
-        }
-        return priceHtml.substring(start + 1, deci + 3);
-    }
-
-    private String parseChangeInDollars(String changeInDollarsHtml) {
-        int target = changeInDollarsHtml.indexOf("after");
-        int deci = getIndexOfDecimal(changeInDollarsHtml, target);
-        int start = deci;
-        while (changeInDollarsHtml.charAt(start) != '>') {
-            start--;
-        }
-        return changeInDollarsHtml.substring(start + 1, deci + 3).trim();
-    }
-
-    private String parseChangePercent(String changePercentHtml) {
-        int target = changePercentHtml.indexOf("after");
-        int deci = getIndexOfDecimal(changePercentHtml, target);
-        int start = deci;
-        while (changePercentHtml.charAt(start) != '>') {
-            start--;
-        }
-        return changePercentHtml.substring(start + 1, deci + 3).trim();
-    }
-
-    private String parseClose(String closeHtml) {
-        int target = closeHtml.indexOf("semi");
-        int deci = getIndexOfDecimal(closeHtml, target);
-        int start = deci;
-        while (closeHtml.charAt(start) != '$') {
-            start--;
-        }
-        return closeHtml.substring(start + 1, deci + 3);
     }
 
     private String parseOpen(String line) {
@@ -251,17 +196,6 @@ public class StockSymbol {
                 avgVolume;
     }
 
-    private String parseVolume(String volumeHtml) {
-        int target = volumeHtml.indexOf("Volume");
-        int deci = getIndexOfDecimal(volumeHtml, target);
-        int start = deci;
-        while (volumeHtml.charAt(start) != '>') {
-            start--;
-        }
-        // increased length to get the B, M, or K
-        return volumeHtml.substring(start + 1, deci + 4);
-    }
-
     protected double[] callApiAndParseCloseValues(String symbol) throws IOException {
         String alphaUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY"
                 + "&symbol=" + symbol
@@ -323,23 +257,23 @@ public class StockSymbol {
     }
 
     public String getStockName() {
-        return stockName;
+        return currentStockData.parseStockName();
     }
 
     public String getPrice() {
-        return price;
+        return currentStockData.parsePrice();
     }
 
     public String getChange() {
-        return change;
+        return currentStockData.parseChangeInDollars();
     }
 
     public String getChangePercent() {
-        return changePercent;
+        return currentStockData.parseChangePercent();
     }
 
     public String getClose() {
-        return close;
+        return currentStockData.parseClose();
     }
 
     public String getOpen() {
@@ -380,7 +314,7 @@ public class StockSymbol {
 
 
     public String getVolume() {
-        return volume;
+        return currentStockData.parseVolume();
     }
 
 
@@ -402,82 +336,4 @@ public class StockSymbol {
         return iconUrl;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        StockSymbol that = (StockSymbol) o;
-
-        if (!Objects.equals(stockName, that.stockName)) return false;
-        if (!Objects.equals(price, that.price)) return false;
-        if (!Objects.equals(change, that.change)) return false;
-        if (!Objects.equals(changePercent, that.changePercent))
-            return false;
-        if (!Objects.equals(close, that.close)) return false;
-        if (!Objects.equals(open, that.open)) return false;
-        if (!Objects.equals(low, that.low)) return false;
-        if (!Objects.equals(high, that.high)) return false;
-        if (!Objects.equals(yearlyLow, that.yearlyLow)) return false;
-        if (!Objects.equals(yearlyHigh, that.yearlyHigh)) return false;
-        if (!Objects.equals(marketCap, that.marketCap)) return false;
-        if (!Objects.equals(peRatio, that.peRatio)) return false;
-        if (!Objects.equals(eps, that.eps)) return false;
-        if (!Objects.equals(floatShorted, that.floatShorted)) return false;
-        if (!Objects.equals(volume, that.volume)) return false;
-        if (!Objects.equals(averageVolume, that.averageVolume))
-            return false;
-        if (!Objects.equals(fiftyDayMA, that.fiftyDayMA)) return false;
-        if (!Objects.equals(hundredDayMA, that.hundredDayMA)) return false;
-        return Objects.equals(iconUrl, that.iconUrl);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = stockName != null ? stockName.hashCode() : 0;
-        result = 31 * result + (price != null ? price.hashCode() : 0);
-        result = 31 * result + (change != null ? change.hashCode() : 0);
-        result = 31 * result + (changePercent != null ? changePercent.hashCode() : 0);
-        result = 31 * result + (close != null ? close.hashCode() : 0);
-        result = 31 * result + (open != null ? open.hashCode() : 0);
-        result = 31 * result + (low != null ? low.hashCode() : 0);
-        result = 31 * result + (high != null ? high.hashCode() : 0);
-        result = 31 * result + (yearlyLow != null ? yearlyLow.hashCode() : 0);
-        result = 31 * result + (yearlyHigh != null ? yearlyHigh.hashCode() : 0);
-        result = 31 * result + (marketCap != null ? marketCap.hashCode() : 0);
-        result = 31 * result + (peRatio != null ? peRatio.hashCode() : 0);
-        result = 31 * result + (eps != null ? eps.hashCode() : 0);
-        result = 31 * result + (floatShorted != null ? floatShorted.hashCode() : 0);
-        result = 31 * result + (volume != null ? volume.hashCode() : 0);
-        result = 31 * result + (averageVolume != null ? averageVolume.hashCode() : 0);
-        result = 31 * result + (fiftyDayMA != null ? fiftyDayMA.hashCode() : 0);
-        result = 31 * result + (hundredDayMA != null ? hundredDayMA.hashCode() : 0);
-        result = 31 * result + (iconUrl != null ? iconUrl.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "StockSymbol{" +
-                "stockName='" + stockName + '\'' +
-                ", price='" + price + '\'' +
-                ", change='" + change + '\'' +
-                ", changePercent='" + changePercent + '\'' +
-                ", close='" + close + '\'' +
-                ", open='" + open + '\'' +
-                ", low='" + low + '\'' +
-                ", high='" + high + '\'' +
-                ", yearlyLow='" + yearlyLow + '\'' +
-                ", yearlyHigh='" + yearlyHigh + '\'' +
-                ", marketCap='" + marketCap + '\'' +
-                ", peRatio='" + peRatio + '\'' +
-                ", eps='" + eps + '\'' +
-                ", floatShorted='" + floatShorted + '\'' +
-                ", volume='" + volume + '\'' +
-                ", averageVolume='" + averageVolume + '\'' +
-                ", fiftyDayMA='" + fiftyDayMA + '\'' +
-                ", hundredDayMA='" + hundredDayMA + '\'' +
-                ", iconUrl=" + iconUrl +
-                '}';
-    }
 }

@@ -1,2 +1,14 @@
-StockSymbol{stockName='Netflix Inc.', price='
-   601.67', change='0.00', changePercent='0.00', close='601.67', open='595.00', low='592.33', high=' 605.36', yearlyLow='285.33', yearlyHigh=' 605.36', marketCap='254.31B', peRatio='50.07', eps='12.02', floatShorted='1.88', volume='Volume: 4.49M', averageVolume='4.76M', fiftyDayMA='not found', hundredDayMA='not found', iconUrl=https://www.google.com/webhp}
+Netflix Inc.
+-------------------------------
+Open                                   595.00
+Close                                   601.67
+Day's Range                                   592.33- 605.36
+52 Week Range                                   285.33- 605.36
+Volume                            Volume: 4.49M
+Average Volume                                    4.76M
+Market Cap                                  254.31B
+P/E Ratio                                    50.07
+EPS                                    12.02
+Float Shorted                                     1.88
+50-Day Moving Average                                   507.62
+100-Day Moving Average                                   462.17
