@@ -32,10 +32,9 @@ public class StockSymbol {
     private String hundredDayMA = "not found";
     private URL iconUrl;
 
-
-    public StockSymbol(String symbol) {
+    public StockSymbol(String symbol, String baseUrl, String alphaBaseUrl) {
         try {
-            Document doc = Jsoup.connect("https://www.marketwatch.com/investing/stock/" + symbol).get();
+            Document doc = Jsoup.connect(baseUrl + "/investing/stock/" + symbol).get();
 
             //------------------------------------------
             // Find the stock name
@@ -237,12 +236,12 @@ public class StockSymbol {
             }
             volume = line.substring(start + 1, deci + 4); // increased length to get the B, M, or K
 
-
             //-------------------------------------------------------------------------------------
             // Calculate 50 day and 100 day moving averages
-            String alphaUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY"
+            String alphaUrl = alphaBaseUrl + "/query?function=TIME_SERIES_DAILY"
                     + "&symbol=" + symbol
-                    + "&apikey=NKNKJCBRLYI9H5SO&datatype=csv";
+                    + "&apikey=NKNKJCBRLYI9H5SO" +
+                    "&datatype=csv";
             URL alphaAdvantage = new URL(alphaUrl);
             URLConnection data = alphaAdvantage.openConnection();
             Scanner input = new Scanner(data.getInputStream());
