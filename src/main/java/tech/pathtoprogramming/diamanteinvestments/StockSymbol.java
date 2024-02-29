@@ -1,5 +1,4 @@
 package tech.pathtoprogramming.diamanteinvestments;
-// This class will retrieve all the info associated with the stock symbol
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -12,7 +11,6 @@ import java.util.Scanner;
 
 public class StockSymbol {
 
-    // Class variables
     private String stockName = "not found";
     private String price = "not found";
     private String change = "not found";
@@ -37,10 +35,7 @@ public class StockSymbol {
 
     public StockSymbol(String symbol) {
         try {
-
-            //Set up url connection using JSoup
             Document doc = Jsoup.connect("https://www.marketwatch.com/investing/stock/" + symbol).get();
-
 
             //------------------------------------------
             // Find the stock name
@@ -51,7 +46,7 @@ public class StockSymbol {
             int target = line.indexOf("name");
             int deci = line.indexOf(">", target);
             int end = line.indexOf("<", deci);
-            if (line.isEmpty()) { // The stock symbol is invalid so end method
+            if (line.isEmpty()) {
                 return;
             }
             stockName = line.substring(deci + 1, end);
@@ -61,9 +56,7 @@ public class StockSymbol {
             // Find current price of stock
             // class = intraday_data
             // use div# for id
-
             ele = doc.select("div.intraday__data");
-            //change--point--q
             line = ele.toString();
             target = line.indexOf("lastsale");
             deci = line.indexOf(".", target);
@@ -72,7 +65,6 @@ public class StockSymbol {
                 start--;
             }
             price = line.substring(start + 1, deci + 3);
-
 
             //------------------------------------------ ERRORS HERE for when market is open
             // Find change of stock today in $
@@ -113,7 +105,6 @@ public class StockSymbol {
             }
             close = line.substring(start + 1, deci + 3);
 
-
             //------------------------------------------
             // Find open of the stock
             ele = doc.select("li.kv__item");
@@ -124,7 +115,6 @@ public class StockSymbol {
                 start--;
             }
             open = line.substring(start + 1, deci + 3);
-
 
             //------------------------------------------
             // Find low and high of the stock
@@ -178,7 +168,6 @@ public class StockSymbol {
                     marketCap = marketCap.substring(0, marketCap.length() - 2);
                 }
                 if (marketCap.endsWith("B") || marketCap.endsWith("M") || marketCap.endsWith("K")) {
-                    // good
                 } else {
                     marketCap = "N/A";
                 }
@@ -193,7 +182,7 @@ public class StockSymbol {
             while (line.charAt(start) != '>') {
                 start--;
             }
-            if ((deci - target) < 70) { // if N/A then keep P/E as N/A
+            if ((deci - target) < 70) {
                 peRatio = line.substring(start + 1, deci + 3);
             }
 
@@ -206,7 +195,7 @@ public class StockSymbol {
             while (line.charAt(start) != '$') {
                 start--;
             }
-            if ((deci - target) < 70) { // if N/A then keep EPS as N/A
+            if ((deci - target) < 70) {
                 eps = line.substring(start + 1, deci + 3);
             }
 
@@ -219,10 +208,9 @@ public class StockSymbol {
             while (line.charAt(start) != '>') {
                 start--;
             }
-            if ((deci - target) < 70) { // if N/A then keep float shorted as N/A
+            if ((deci - target) < 70) {
                 floatShorted = line.substring(start + 1, deci + 3);
             }
-
 
             //------------------------------------------
             // Find the Average Volume
@@ -237,7 +225,6 @@ public class StockSymbol {
                 averageVolume = averageVolume.substring(0, averageVolume.length() - 1);
             }
 
-
             //------------------------------------------
             // Find today's volume
             ele = doc.select("div.range__header");
@@ -251,9 +238,8 @@ public class StockSymbol {
             volume = line.substring(start + 1, deci + 4); // increased length to get the B, M, or K
 
 
-//-------------------------------------------------------------------------------------
-// Calculate 50 day and 100 day moving averages
-
+            //-------------------------------------------------------------------------------------
+            // Calculate 50 day and 100 day moving averages
             String alphaUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY"
                     + "&symbol=" + symbol
                     + "&apikey=NKNKJCBRLYI9H5SO&datatype=csv";
@@ -263,7 +249,7 @@ public class StockSymbol {
             if (input.hasNext()) { // skip header line
                 input.nextLine();
             }
-// read in close values to a fixed array
+            // read in close values to a fixed array
             double closeValues[] = new double[100];
             int x = 0, count = 0;
             double sum50 = 0, sum100 = 0, fiftyAvg = 0, hundredAvg = 0;
@@ -278,7 +264,7 @@ public class StockSymbol {
                     aStart--;
                 }
                 aClose = aLine.substring(aStart + 1, aDeci + 3);
-                closeValues[x] = Double.parseDouble(aClose); // convert String to int and store into array
+                closeValues[x] = Double.parseDouble(aClose);
                 x++;
             }
             for (double cV : closeValues) {
@@ -290,45 +276,33 @@ public class StockSymbol {
                 count++;
             }
             fiftyAvg = sum50 / 50;
-// trim to 2 decimal places
+            // trim to 2 decimal places
             String temp = "0";
             NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
             temp = currencyFormatter.format(fiftyAvg);
             temp = temp.substring(1, temp.length()); // trim off $
             fiftyDayMA = temp;
-// trim to 2 decimal places
+            // trim to 2 decimal places
             sum100 += sum50;
             hundredAvg = sum100 / closeValues.length;
-// trim to 2 decimal places
+            // trim to 2 decimal places
             temp = currencyFormatter.format(hundredAvg);
             temp = temp.substring(1, temp.length()); // trim off $
             hundredDayMA = temp;
             input.close();
 
-//TO DO grab icon off of Nasdaq
-
-//Document doc2 = Jsoup.connect("https://www.nasdaq.com/market-activity/stocks/" + symbol).get();
-//Elements image = doc2.select("div#logo-wrap img[src]");
-//String urlIcon = image.attr("src");
             String urlIcon = "";
-
             if (urlIcon.isEmpty()) {
                 iconUrl = new URL("https://www.google.com/webhp");
                 return;
             }
             iconUrl = new URL(urlIcon);
-
         } catch (Exception e) {
             System.out.println(e);
-
         }
     }
 
-
-//-----------------------------------------------------------
-// Getter methods
-
-
+    // Getter methods
     public String getStockName() {
         return stockName;
     }
@@ -385,21 +359,17 @@ public class StockSymbol {
         return floatShorted;
     }
 
-
     public String getVolume() {
         return volume;
     }
-
 
     public String getAverageVolume() {
         return averageVolume;
     }
 
-
     public String getFiftyDayMA() {
         return fiftyDayMA;
     }
-
 
     public String getHundredDayMA() {
         return hundredDayMA;
@@ -408,6 +378,4 @@ public class StockSymbol {
     public URL getIconUrl() {
         return iconUrl;
     }
-
-
 }
