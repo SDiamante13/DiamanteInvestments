@@ -166,8 +166,7 @@ public class StockSymbol {
                 if (marketCap.endsWith("<")) {
                     marketCap = marketCap.substring(0, marketCap.length() - 2);
                 }
-                if (marketCap.endsWith("B") || marketCap.endsWith("M") || marketCap.endsWith("K")) {
-                } else {
+                if (!marketCap.endsWith("B") && !marketCap.endsWith("M") && !marketCap.endsWith("K")) {
                     marketCap = "N/A";
                 }
             }
@@ -249,11 +248,11 @@ public class StockSymbol {
                 input.nextLine();
             }
             // read in close values to a fixed array
-            double closeValues[] = new double[100];
+            double[] closeValues = new double[100];
             int x = 0, count = 0;
-            double sum50 = 0, sum100 = 0, fiftyAvg = 0, hundredAvg = 0;
-            int aTarget = 0, aDeci = 0, aStart = 0;
-            String aClose = "N/A";
+            double sum50 = 0, sum100 = 0, fiftyAvg, hundredAvg;
+            int aTarget, aDeci, aStart;
+            String aClose;
             while (input.hasNextLine()) {
                 String aLine = input.nextLine();
                 aTarget = aLine.lastIndexOf(",");
@@ -269,33 +268,28 @@ public class StockSymbol {
             for (double cV : closeValues) {
                 if (count < 50) {
                     sum50 += cV;
-                } else if (count >= 50) {
+                } else {
                     sum100 += cV;
                 }
                 count++;
             }
             fiftyAvg = sum50 / 50;
             // trim to 2 decimal places
-            String temp = "0";
+            String temp;
             NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
             temp = currencyFormatter.format(fiftyAvg);
-            temp = temp.substring(1, temp.length()); // trim off $
+            temp = temp.substring(1); // trim off $
             fiftyDayMA = temp;
             // trim to 2 decimal places
             sum100 += sum50;
             hundredAvg = sum100 / closeValues.length;
             // trim to 2 decimal places
             temp = currencyFormatter.format(hundredAvg);
-            temp = temp.substring(1, temp.length()); // trim off $
+            temp = temp.substring(1); // trim off $
             hundredDayMA = temp;
             input.close();
 
-            String urlIcon = "";
-            if (urlIcon.isEmpty()) {
-                iconUrl = new URL("https://www.google.com/webhp");
-                return;
-            }
-            iconUrl = new URL(urlIcon);
+            iconUrl = new URL("https://www.google.com/webhp");
         } catch (Exception e) {
             System.out.println(e);
         }
