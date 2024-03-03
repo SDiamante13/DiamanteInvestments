@@ -4,6 +4,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.NumberFormat;
@@ -235,64 +236,79 @@ public class StockSymbol {
             }
             volume = line.substring(start + 1, deci + 4); // increased length to get the B, M, or K
 
-            //-------------------------------------------------------------------------------------
-            // Calculate 50 day and 100 day moving averages
-            String alphaUrl = alphaBaseUrl + "/query?function=TIME_SERIES_DAILY"
-                    + "&symbol=" + symbol
-                    + "&apikey=NKNKJCBRLYI9H5SO" +
-                    "&datatype=csv";
-            URL alphaAdvantage = new URL(alphaUrl);
-            URLConnection data = alphaAdvantage.openConnection();
-            Scanner input = new Scanner(data.getInputStream());
-            if (input.hasNext()) { // skip header line
-                input.nextLine();
-            }
-            // read in close values to a fixed array
-            double[] closeValues = new double[100];
-            int x = 0, count = 0;
-            double sum50 = 0, sum100 = 0, fiftyAvg, hundredAvg;
-            int aTarget, aDeci, aStart;
-            String aClose;
-            while (input.hasNextLine()) {
-                String aLine = input.nextLine();
-                aTarget = aLine.lastIndexOf(",");
-                aDeci = aTarget - 5; // move target to the decimal point
-                aStart = aDeci;
-                while (aLine.charAt(aStart) != ',') {
-                    aStart--;
-                }
-                aClose = aLine.substring(aStart + 1, aDeci + 3);
-                closeValues[x] = Double.parseDouble(aClose);
-                x++;
-            }
-            for (double cV : closeValues) {
-                if (count < 50) {
-                    sum50 += cV;
-                } else {
-                    sum100 += cV;
-                }
-                count++;
-            }
-            fiftyAvg = sum50 / 50;
-            // trim to 2 decimal places
-            String temp;
-            NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance();
-            temp = currencyFormatter.format(fiftyAvg);
-            temp = temp.substring(1); // trim off $
-            fiftyDayMA = temp;
-            // trim to 2 decimal places
-            sum100 += sum50;
-            hundredAvg = sum100 / closeValues.length;
-            // trim to 2 decimal places
-            temp = currencyFormatter.format(hundredAvg);
-            temp = temp.substring(1); // trim off $
-            hundredDayMA = temp;
-            input.close();
+            double[] closeValues = callApiAndParseCloseValues(symbol, alphaBaseUrl);
+            CloseValueSums closeValueSums = getCloseValueSums(closeValues);
+            fiftyDayMA = parseFiftyDayMovingAverage(closeValueSums);
+            hundredDayMA = parseHundredDayMovingAverage(closeValueSums, closeValues);
 
             iconUrl = new URL("https://www.google.com/webhp");
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    class CloseValueSums {
+        public double sum50 = 0;
+        public double sum100 = 0;
+    }
+
+    private double[] callApiAndParseCloseValues(String symbol, String alphaBaseUrl) throws IOException {
+        String alphaUrl = alphaBaseUrl + "/query?function=TIME_SERIES_DAILY"
+                + "&symbol=" + symbol
+                + "&apikey=NKNKJCBRLYI9H5SO" +
+                "&datatype=csv";
+        URL alphaAdvantage = new URL(alphaUrl);
+        URLConnection data = alphaAdvantage.openConnection();
+        Scanner input = new Scanner(data.getInputStream());
+        if (input.hasNext()) { // skip header line
+            input.nextLine();
+        }
+        double[] closeValues = new double[100];
+        int x = 0;
+        while (input.hasNextLine()) {
+            String aLine = input.nextLine();
+            int aTarget = aLine.lastIndexOf(",");
+            // move target to the decimal point
+            int aDeci = aTarget - 5;
+            int aStart = aDeci;
+            while (aLine.charAt(aStart) != ',') {
+                aStart--;
+            }
+            String aClose = aLine.substring(aStart + 1, aDeci + 3);
+            closeValues[x] = Double.parseDouble(aClose);
+            x++;
+        }
+        input.close();
+        return closeValues;
+    }
+
+    private CloseValueSums getCloseValueSums(double[] closeValues) {
+        CloseValueSums closeValueSums = new CloseValueSums();
+        int count = 0;
+        for (double cV : closeValues) {
+            if (count < 50) {
+                closeValueSums.sum50 += cV;
+            } else {
+                closeValueSums.sum100 += cV;
+            }
+            count++;
+        }
+        return closeValueSums;
+    }
+
+    private String parseFiftyDayMovingAverage(CloseValueSums closeValueSums) {
+        double fiftyAvg = closeValueSums.sum50 / 50;
+        return NumberFormat.getCurrencyInstance()
+                .format(fiftyAvg)
+                .substring(1);
+    }
+
+    private String parseHundredDayMovingAverage(CloseValueSums closeValueSums, double[] closeValues) {
+        closeValueSums.sum100 += closeValueSums.sum50;
+        double hundredAvg = closeValueSums.sum100 / closeValues.length;
+        return NumberFormat.getCurrencyInstance()
+                .format(hundredAvg)
+                .substring(1);
     }
 
     // Getter methods
