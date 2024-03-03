@@ -224,17 +224,7 @@ public class StockSymbol {
                 averageVolume = averageVolume.substring(0, averageVolume.length() - 1);
             }
 
-            //------------------------------------------
-            // Find today's volume
-            ele = doc.select("div.range__header");
-            line = ele.toString();
-            target = line.indexOf("Volume");
-            deci = line.indexOf(".", target);
-            start = deci;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            volume = line.substring(start + 1, deci + 4); // increased length to get the B, M, or K
+            volume = parseVolume(doc.select("div.range__header").toString());
 
             double[] closeValues = callApiAndParseCloseValues(symbol, alphaBaseUrl);
             CloseValueSums closeValueSums = getCloseValueSums(closeValues);
@@ -245,6 +235,18 @@ public class StockSymbol {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private String parseVolume(String volumeHtml) {
+        String line = volumeHtml;
+        int target = line.indexOf("Volume");
+        int deci = line.indexOf(".", target);
+        int start = deci;
+        while (line.charAt(start) != '>') {
+            start--;
+        }
+        // increased length to get the B, M, or K
+        return line.substring(start + 1, deci + 4);
     }
 
     class CloseValueSums {
