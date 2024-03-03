@@ -152,53 +152,9 @@ public class StockSymbol {
             }
             yearlyHigh = line.substring(start2 + 1, index + 3);
 
-            //------------------------------------------
-            // Find the Market Cap
-            target = line.indexOf("Market Cap");
-            deci = line.indexOf(".", target);
-            start = deci;
-            if (deci - target > 200) { // ETFs will show N/A
-                marketCap = "N/A";
-            } else {
-                while (line.charAt(start) != '$') {
-                    start--;
-                }
-                marketCap = line.substring(start + 1, deci + 4); // increased length to get the B, M, or K
-                if (marketCap.endsWith("<")) {
-                    marketCap = marketCap.substring(0, marketCap.length() - 2);
-                }
-                if (!marketCap.endsWith("B") && !marketCap.endsWith("M") && !marketCap.endsWith("K")) {
-                    marketCap = "N/A";
-                }
-            }
-
-
-            //------------------------------------------
-            // Find the P/E Ratio
-            target = line.indexOf("P/E Ratio");
-            deci = line.indexOf(".", target);
-            start = deci;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            if ((deci - target) < 70) {
-                peRatio = line.substring(start + 1, deci + 3);
-            }
-
-
-            //------------------------------------------
-            // Find the EPS (Earnings per Share)
-            target = line.indexOf("EPS");
-            deci = line.indexOf(".", target);
-            start = deci;
-            while (line.charAt(start) != '$') {
-                start--;
-            }
-            if ((deci - target) < 70) {
-                eps = line.substring(start + 1, deci + 3);
-            }
-
-
+            marketCap = parseMarketCap(line);
+            peRatio = parsePERatio(line);
+            eps = parseEarningPerShare(line);
             floatShorted = parseFloatShortedPercentage(line);
             averageVolume = parseAverageVolume(line);
 
@@ -213,6 +169,52 @@ public class StockSymbol {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private String parseMarketCap(String line) {
+        int target = line.indexOf("Market Cap");
+        int deci = line.indexOf(".", target);
+        int start = deci;
+        if (deci - target > 200) { // ETFs will show N/A
+            return "N/A";
+        }
+        while (line.charAt(start) != '$') {
+            start--;
+        }
+        String result = line.substring(start + 1, deci + 4); // increased length to get the B, M, or K
+        if (result.endsWith("<")) {
+            result = result.substring(0, result.length() - 2);
+        }
+        if (!result.endsWith("B") && !result.endsWith("M") && !result.endsWith("K")) {
+            result = "N/A";
+        }
+        return result;
+    }
+
+    private String parsePERatio(String line) {
+        int target = line.indexOf("P/E Ratio");
+        int deci = line.indexOf(".", target);
+        int start = deci;
+        while (line.charAt(start) != '>') {
+            start--;
+        }
+        if (deci - target < 70) {
+            return line.substring(start + 1, deci + 3);
+        }
+        return "N/A";
+    }
+
+    private String parseEarningPerShare(String line) {
+        int target = line.indexOf("EPS");
+        int deci = line.indexOf(".", target);
+        int start = deci;
+        while (line.charAt(start) != '$') {
+            start--;
+        }
+        if (deci - target < 70) {
+            return line.substring(start + 1, deci + 3);
+        }
+        return "N/A";
     }
 
     private String parseFloatShortedPercentage(String line) {
