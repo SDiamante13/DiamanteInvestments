@@ -2,7 +2,6 @@ package tech.pathtoprogramming.diamanteinvestments;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.URL;
@@ -37,27 +36,14 @@ public class StockSymbol {
         try {
             Document doc = Jsoup.connect(baseUrl + "/investing/stock/" + symbol).get();
 
-            //------------------------------------------
-            // Find the stock name
-            // h1> class = company__name
-            // use div# for id
-            Elements ele = doc.select("h1.company__name");
-            String line = ele.toString();
-            int target = line.indexOf("name");
-            int deci = line.indexOf(">", target);
-            int end = line.indexOf("<", deci);
-            if (line.isEmpty()) {
-                return;
-            }
-            stockName = line.substring(deci + 1, end);
-
+            stockName = parseStockName(doc.select("h1.company__name").toString());
             price = parsePrice(doc.select("div.intraday__data").toString());
             change = parseChangeInDollars(doc.select("span.change--point--q").toString());
             changePercent = parseChangePercentage(doc.select("span.change--percent--q").toString());
             close = parseClose(doc.select("tbody.remove-last-border").toString());
             volume = parseVolume(doc.select("div.range__header").toString());
 
-            line = doc.select("li.kv__item").toString();
+            String line = doc.select("li.kv__item").toString();
             open = parseOpen(line);
             low = parseLow(line);
             high = parseHigh(line);
@@ -78,6 +64,16 @@ public class StockSymbol {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private String parseStockName(String stockNameHtml) {
+        if (stockNameHtml.isEmpty()) {
+            throw new IllegalArgumentException("The stock name was not found.");
+        }
+        int target = stockNameHtml.indexOf("name");
+        int deci = stockNameHtml.indexOf(">", target);
+        int end = stockNameHtml.indexOf("<", deci);
+        return stockNameHtml.substring(deci + 1, end);
     }
 
     private String parsePrice(String priceHtml) {
