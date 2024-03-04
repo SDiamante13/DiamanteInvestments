@@ -59,7 +59,7 @@ public class StockSymbol {
             ele = doc.select("div.intraday__data");
             line = ele.toString();
             target = line.indexOf("lastsale");
-            deci = line.indexOf(".", target);
+            deci = indexOfDecimal(line, target);
             int start = deci;
             while (line.charAt(start) != '>') {
                 start--;
@@ -72,7 +72,7 @@ public class StockSymbol {
             ele = doc.select("span.change--point--q");
             line = ele.toString();
             target = line.indexOf("after");
-            deci = line.indexOf(".", target);
+            deci = indexOfDecimal(line, target);
             start = deci;
             while (line.charAt(start) != '>') {
                 start--;
@@ -85,7 +85,7 @@ public class StockSymbol {
             ele = doc.select("span.change--percent--q");
             line = ele.toString();
             target = line.indexOf("after");
-            deci = line.indexOf(".", target);
+            deci = indexOfDecimal(line, target);
             start = deci;
             while (line.charAt(start) != '>') {
                 start--;
@@ -98,7 +98,7 @@ public class StockSymbol {
             ele = doc.select("tbody.remove-last-border");
             line = ele.toString();
             target = line.indexOf("semi");
-            deci = line.indexOf(".", target);
+            deci = indexOfDecimal(line, target);
             start = deci;
             while (line.charAt(start) != '$') {
                 start--;
@@ -119,7 +119,7 @@ public class StockSymbol {
             //------------------------------------------
             // Find low and high of the stock
             target = line.indexOf("Day Range");
-            deci = line.indexOf(".", target);
+            deci = indexOfDecimal(line, target);
             start = deci;
             int index = deci + 1;
             while (line.charAt(start) != '>') {
@@ -127,31 +127,15 @@ public class StockSymbol {
             }
             low = line.substring(start + 1, deci + 3);
             // Find the decimal of the high
-            index = line.indexOf(".", index);
+            index = indexOfDecimal(line, index);
             int start2 = index;
             while (line.charAt(start2) != '-') {
                 start2--;
             }
             high = line.substring(start2 + 1, index + 3);
 
-            //------------------------------------------
-            // Find 52 week low and high
-            target = line.indexOf("52 Week Range");
-            deci = line.indexOf(".", target);
-            start = deci;
-            index = deci + 1;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            yearlyLow = line.substring(start + 1, deci + 3);
-            // Find the decimal of the high
-            index = line.indexOf(".", index);
-            start2 = index;
-            while (line.charAt(start2) != '-') {
-                start2--;
-            }
-            yearlyHigh = line.substring(start2 + 1, index + 3);
-
+            yearlyLow = parseYearlyLow(line);
+            yearlyHigh = parseYearlyHigh(line);
             marketCap = parseMarketCap(line);
             peRatio = parsePERatio(line);
             eps = parseEarningPerShare(line);
@@ -171,9 +155,36 @@ public class StockSymbol {
         }
     }
 
+    private String parseYearlyHigh(String line) {
+        // Find the decimal of the high
+        int index = indexOfDecimal(line, indexOf52WeekRange(line)) + 1;
+        index = indexOfDecimal(line, index);
+        int start2 = index;
+        while (line.charAt(start2) != '-') {
+            start2--;
+        }
+        return line.substring(start2 + 1, index + 3);
+    }
+
+    private String parseYearlyLow(String line) {
+        int start = indexOfDecimal(line, indexOf52WeekRange(line));
+        while (line.charAt(start) != '>') {
+            start--;
+        }
+        return line.substring(start + 1, indexOfDecimal(line, indexOf52WeekRange(line)) + 3);
+    }
+
+    private int indexOf52WeekRange(String line) {
+        return line.indexOf("52 Week Range");
+    }
+
+    private int indexOfDecimal(String line, int target) {
+        return line.indexOf(".", target);
+    }
+
     private String parseMarketCap(String line) {
         int target = line.indexOf("Market Cap");
-        int deci = line.indexOf(".", target);
+        int deci = indexOfDecimal(line, target);
         int start = deci;
         if (deci - target > 200) { // ETFs will show N/A
             return "N/A";
@@ -193,7 +204,7 @@ public class StockSymbol {
 
     private String parsePERatio(String line) {
         int target = line.indexOf("P/E Ratio");
-        int deci = line.indexOf(".", target);
+        int deci = indexOfDecimal(line, target);
         int start = deci;
         while (line.charAt(start) != '>') {
             start--;
@@ -206,7 +217,7 @@ public class StockSymbol {
 
     private String parseEarningPerShare(String line) {
         int target = line.indexOf("EPS");
-        int deci = line.indexOf(".", target);
+        int deci = indexOfDecimal(line, target);
         int start = deci;
         while (line.charAt(start) != '$') {
             start--;
@@ -219,7 +230,7 @@ public class StockSymbol {
 
     private String parseFloatShortedPercentage(String line) {
         int target = line.indexOf("Float Shorted");
-        int deci = line.indexOf(".", target);
+        int deci = indexOfDecimal(line, target);
         int start = deci;
         while (line.charAt(start) != '>') {
             start--;
@@ -232,7 +243,7 @@ public class StockSymbol {
 
     private String parseAverageVolume(String line) {
         int target = line.indexOf("Average Volume");
-        int deci = line.indexOf(".", target);
+        int deci = indexOfDecimal(line, target);
         int start = deci;
         while (line.charAt(start) != '>') {
             start--;
@@ -248,7 +259,7 @@ public class StockSymbol {
     private String parseVolume(String volumeHtml) {
         String line = volumeHtml;
         int target = line.indexOf("Volume");
-        int deci = line.indexOf(".", target);
+        int deci = indexOfDecimal(line, target);
         int start = deci;
         while (line.charAt(start) != '>') {
             start--;
