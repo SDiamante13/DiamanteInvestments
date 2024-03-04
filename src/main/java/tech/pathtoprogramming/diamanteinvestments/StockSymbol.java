@@ -51,89 +51,16 @@ public class StockSymbol {
             }
             stockName = line.substring(deci + 1, end);
 
+            price = parsePrice(doc.select("div.intraday__data").toString());
+            change = parseChangeInDollars(doc.select("span.change--point--q").toString());
+            changePercent = parseChangePercentage(doc.select("span.change--percent--q").toString());
+            close = parseClose(doc.select("tbody.remove-last-border").toString());
+            volume = parseVolume(doc.select("div.range__header").toString());
 
-            //------------------------------------------
-            // Find current price of stock
-            // class = intraday_data
-            // use div# for id
-            ele = doc.select("div.intraday__data");
-            line = ele.toString();
-            target = line.indexOf("lastsale");
-            deci = indexOfDecimal(line, target);
-            int start = deci;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            price = line.substring(start + 1, deci + 3);
-
-            //------------------------------------------ ERRORS HERE for when market is open
-            // Find change of stock today in $
-            // class = span.change--point--q
-            ele = doc.select("span.change--point--q");
-            line = ele.toString();
-            target = line.indexOf("after");
-            deci = indexOfDecimal(line, target);
-            start = deci;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            change = line.substring(start + 1, deci + 3).trim();
-
-            //------------------------------------------
-            // Find change of stock today in %
-            // span class = change=--percent--q
-            ele = doc.select("span.change--percent--q");
-            line = ele.toString();
-            target = line.indexOf("after");
-            deci = indexOfDecimal(line, target);
-            start = deci;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            changePercent = line.substring(start + 1, deci + 3).trim();
-
-
-            //------------------------------------------
-            // Find close of the stock
-            ele = doc.select("tbody.remove-last-border");
-            line = ele.toString();
-            target = line.indexOf("semi");
-            deci = indexOfDecimal(line, target);
-            start = deci;
-            while (line.charAt(start) != '$') {
-                start--;
-            }
-            close = line.substring(start + 1, deci + 3);
-
-            //------------------------------------------
-            // Find open of the stock
-            ele = doc.select("li.kv__item");
-            line = ele.toString();
-            deci = line.indexOf(".");
-            start = deci;
-            while (line.charAt(start) != '$') {
-                start--;
-            }
-            open = line.substring(start + 1, deci + 3);
-
-            //------------------------------------------
-            // Find low and high of the stock
-            target = line.indexOf("Day Range");
-            deci = indexOfDecimal(line, target);
-            start = deci;
-            int index = deci + 1;
-            while (line.charAt(start) != '>') {
-                start--;
-            }
-            low = line.substring(start + 1, deci + 3);
-            // Find the decimal of the high
-            index = indexOfDecimal(line, index);
-            int start2 = index;
-            while (line.charAt(start2) != '-') {
-                start2--;
-            }
-            high = line.substring(start2 + 1, index + 3);
-
+            line = doc.select("li.kv__item").toString();
+            open = parseOpen(line);
+            low = parseLow(line);
+            high = parseHigh(line);
             yearlyLow = parseYearlyLow(line);
             yearlyHigh = parseYearlyHigh(line);
             marketCap = parseMarketCap(line);
@@ -141,8 +68,6 @@ public class StockSymbol {
             eps = parseEarningPerShare(line);
             floatShorted = parseFloatShortedPercentage(line);
             averageVolume = parseAverageVolume(line);
-
-            volume = parseVolume(doc.select("div.range__header").toString());
 
             double[] closeValues = callApiAndParseCloseValues(symbol, alphaBaseUrl);
             CloseValueSums closeValueSums = getCloseValueSums(closeValues);
@@ -153,6 +78,77 @@ public class StockSymbol {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private String parsePrice(String priceHtml) {
+        int target = priceHtml.indexOf("lastsale");
+        int deci = indexOfDecimal(priceHtml, target);
+        int start = deci;
+        while (priceHtml.charAt(start) != '>') {
+            start--;
+        }
+        return priceHtml.substring(start + 1, deci + 3);
+    }
+
+    private String parseChangeInDollars(String changeInDollarsHtml) {
+        int target = changeInDollarsHtml.indexOf("after");
+        int deci = indexOfDecimal(changeInDollarsHtml, target);
+        int start = deci;
+        while (changeInDollarsHtml.charAt(start) != '>') {
+            start--;
+        }
+        return changeInDollarsHtml.substring(start + 1, deci + 3).trim();
+    }
+
+    private String parseChangePercentage(String changePercentageHtml) {
+        int target = changePercentageHtml.indexOf("after");
+        int deci = indexOfDecimal(changePercentageHtml, target);
+        int start = deci;
+        while (changePercentageHtml.charAt(start) != '>') {
+            start--;
+        }
+        return changePercentageHtml.substring(start + 1, deci + 3).trim();
+    }
+
+    private String parseClose(String closeHtml) {
+        int target = closeHtml.indexOf("semi");
+        int deci = indexOfDecimal(closeHtml, target);
+        int start = deci;
+        while (closeHtml.charAt(start) != '$') {
+            start--;
+        }
+        return closeHtml.substring(start + 1, deci + 3);
+    }
+
+    private String parseOpen(String line) {
+        int deci = line.indexOf(".");
+        int start = deci;
+        while (line.charAt(start) != '$') {
+            start--;
+        }
+        return line.substring(start + 1, deci + 3);
+    }
+
+    private String parseLow(String line) {
+        int start = indexOfDecimal(line, indexOfDayRange(line));
+        while (line.charAt(start) != '>') {
+            start--;
+        }
+        return line.substring(start + 1, indexOfDecimal(line, indexOfDayRange(line)) + 3);
+    }
+
+    private String parseHigh(String line) {
+        int index = indexOfDecimal(line, indexOfDayRange(line)) + 1;
+        index = indexOfDecimal(line, index);
+        int start = index;
+        while (line.charAt(start) != '-') {
+            start--;
+        }
+        return line.substring(start + 1, index + 3);
+    }
+
+    private int indexOfDayRange(String line) {
+        return line.indexOf("Day Range");
     }
 
     private String parseYearlyHigh(String line) {
