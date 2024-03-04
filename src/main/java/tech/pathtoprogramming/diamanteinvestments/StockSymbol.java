@@ -11,12 +11,8 @@ import java.util.Scanner;
 
 public class StockSymbol {
 
-    private String stockName = "not found";
-    private String price = "not found";
-    private String change = "not found";
-    private String changePercent = "not found";
+    private CurrentStockData currentStockData;
 
-    private String close = "not found";
     private String open = "not found";
     private String low = "not found";
     private String high = "not found";
@@ -26,7 +22,6 @@ public class StockSymbol {
     private String peRatio = "N/A";
     private String eps = "N/A";
     private String floatShorted = "N/A";
-    private String volume = "not found";
     private String averageVolume = "not found";
     private String fiftyDayMA = "not found";
     private String hundredDayMA = "not found";
@@ -36,12 +31,13 @@ public class StockSymbol {
         try {
             Document doc = Jsoup.connect(baseUrl + "/investing/stock/" + symbol).get();
 
-            stockName = parseStockName(doc.select("h1.company__name").toString());
-            price = parsePrice(doc.select("div.intraday__data").toString());
-            change = parseChangeInDollars(doc.select("span.change--point--q").toString());
-            changePercent = parseChangePercentage(doc.select("span.change--percent--q").toString());
-            close = parseClose(doc.select("tbody.remove-last-border").toString());
-            volume = parseVolume(doc.select("div.range__header").toString());
+            String stockNameHtml = doc.select("h1.company__name").toString();
+            String priceHtml = doc.select("div.intraday__data").toString();
+            String changeInDollarsHtml = doc.select("span.change--point--q").toString();
+            String changePercentageHtml = doc.select("span.change--percent--q").toString();
+            String closeHtml = doc.select("tbody.remove-last-border").toString();
+            String volumeHtml = doc.select("div.range__header").toString();
+            currentStockData = new CurrentStockData(stockNameHtml, priceHtml, changeInDollarsHtml, changePercentageHtml, closeHtml, volumeHtml);
 
             String line = doc.select("li.kv__item").toString();
             open = parseOpen(line);
@@ -66,56 +62,6 @@ public class StockSymbol {
         }
     }
 
-    private String parseStockName(String stockNameHtml) {
-        if (stockNameHtml.isEmpty()) {
-            throw new IllegalArgumentException("The stock name was not found.");
-        }
-        int target = stockNameHtml.indexOf("name");
-        int deci = stockNameHtml.indexOf(">", target);
-        int end = stockNameHtml.indexOf("<", deci);
-        return stockNameHtml.substring(deci + 1, end);
-    }
-
-    private String parsePrice(String priceHtml) {
-        int target = priceHtml.indexOf("lastsale");
-        int deci = indexOfDecimal(priceHtml, target);
-        int start = deci;
-        while (priceHtml.charAt(start) != '>') {
-            start--;
-        }
-        return priceHtml.substring(start + 1, deci + 3);
-    }
-
-    private String parseChangeInDollars(String changeInDollarsHtml) {
-        int target = changeInDollarsHtml.indexOf("after");
-        int deci = indexOfDecimal(changeInDollarsHtml, target);
-        int start = deci;
-        while (changeInDollarsHtml.charAt(start) != '>') {
-            start--;
-        }
-        return changeInDollarsHtml.substring(start + 1, deci + 3).trim();
-    }
-
-    private String parseChangePercentage(String changePercentageHtml) {
-        int target = changePercentageHtml.indexOf("after");
-        int deci = indexOfDecimal(changePercentageHtml, target);
-        int start = deci;
-        while (changePercentageHtml.charAt(start) != '>') {
-            start--;
-        }
-        return changePercentageHtml.substring(start + 1, deci + 3).trim();
-    }
-
-    private String parseClose(String closeHtml) {
-        int target = closeHtml.indexOf("semi");
-        int deci = indexOfDecimal(closeHtml, target);
-        int start = deci;
-        while (closeHtml.charAt(start) != '$') {
-            start--;
-        }
-        return closeHtml.substring(start + 1, deci + 3);
-    }
-
     private String parseOpen(String line) {
         int deci = line.indexOf(".");
         int start = deci;
@@ -126,16 +72,16 @@ public class StockSymbol {
     }
 
     private String parseLow(String line) {
-        int start = indexOfDecimal(line, indexOfDayRange(line));
+        int start = line.indexOf(".", indexOfDayRange(line));
         while (line.charAt(start) != '>') {
             start--;
         }
-        return line.substring(start + 1, indexOfDecimal(line, indexOfDayRange(line)) + 3);
+        return line.substring(start + 1, line.indexOf(".", indexOfDayRange(line)) + 3);
     }
 
     private String parseHigh(String line) {
-        int index = indexOfDecimal(line, indexOfDayRange(line)) + 1;
-        index = indexOfDecimal(line, index);
+        int index = line.indexOf(".", indexOfDayRange(line)) + 1;
+        index = line.indexOf(".", index);
         int start = index;
         while (line.charAt(start) != '-') {
             start--;
@@ -149,8 +95,8 @@ public class StockSymbol {
 
     private String parseYearlyHigh(String line) {
         // Find the decimal of the high
-        int index = indexOfDecimal(line, indexOf52WeekRange(line)) + 1;
-        index = indexOfDecimal(line, index);
+        int index = line.indexOf(".", indexOf52WeekRange(line)) + 1;
+        index = line.indexOf(".", index);
         int start2 = index;
         while (line.charAt(start2) != '-') {
             start2--;
@@ -159,24 +105,20 @@ public class StockSymbol {
     }
 
     private String parseYearlyLow(String line) {
-        int start = indexOfDecimal(line, indexOf52WeekRange(line));
+        int start = line.indexOf(".", indexOf52WeekRange(line));
         while (line.charAt(start) != '>') {
             start--;
         }
-        return line.substring(start + 1, indexOfDecimal(line, indexOf52WeekRange(line)) + 3);
+        return line.substring(start + 1, line.indexOf(".", indexOf52WeekRange(line)) + 3);
     }
 
     private int indexOf52WeekRange(String line) {
         return line.indexOf("52 Week Range");
     }
 
-    private int indexOfDecimal(String line, int target) {
-        return line.indexOf(".", target);
-    }
-
     private String parseMarketCap(String line) {
         int target = line.indexOf("Market Cap");
-        int deci = indexOfDecimal(line, target);
+        int deci = line.indexOf(".", target);
         int start = deci;
         if (deci - target > 200) { // ETFs will show N/A
             return "N/A";
@@ -196,7 +138,7 @@ public class StockSymbol {
 
     private String parsePERatio(String line) {
         int target = line.indexOf("P/E Ratio");
-        int deci = indexOfDecimal(line, target);
+        int deci = line.indexOf(".", target);
         int start = deci;
         while (line.charAt(start) != '>') {
             start--;
@@ -209,7 +151,7 @@ public class StockSymbol {
 
     private String parseEarningPerShare(String line) {
         int target = line.indexOf("EPS");
-        int deci = indexOfDecimal(line, target);
+        int deci = line.indexOf(".", target);
         int start = deci;
         while (line.charAt(start) != '$') {
             start--;
@@ -222,7 +164,7 @@ public class StockSymbol {
 
     private String parseFloatShortedPercentage(String line) {
         int target = line.indexOf("Float Shorted");
-        int deci = indexOfDecimal(line, target);
+        int deci = line.indexOf(".", target);
         int start = deci;
         while (line.charAt(start) != '>') {
             start--;
@@ -235,7 +177,7 @@ public class StockSymbol {
 
     private String parseAverageVolume(String line) {
         int target = line.indexOf("Average Volume");
-        int deci = indexOfDecimal(line, target);
+        int deci = line.indexOf(".", target);
         int start = deci;
         while (line.charAt(start) != '>') {
             start--;
@@ -246,18 +188,6 @@ public class StockSymbol {
             return temp.substring(0, temp.length() - 1);
         }
         return temp;
-    }
-
-    private String parseVolume(String volumeHtml) {
-        String line = volumeHtml;
-        int target = line.indexOf("Volume");
-        int deci = indexOfDecimal(line, target);
-        int start = deci;
-        while (line.charAt(start) != '>') {
-            start--;
-        }
-        // increased length to get the B, M, or K
-        return line.substring(start + 1, deci + 4);
     }
 
     class CloseValueSums {
@@ -326,23 +256,27 @@ public class StockSymbol {
 
     // Getter methods
     public String getStockName() {
-        return stockName;
+        return currentStockData.parseStockName();
     }
 
     public String getPrice() {
-        return price;
+        return currentStockData.parsePrice();
     }
 
     public String getChange() {
-        return change;
+        return currentStockData.parseChangeInDollars();
     }
 
     public String getChangePercent() {
-        return changePercent;
+        return currentStockData.parseChangePercentage();
     }
 
     public String getClose() {
-        return close;
+        return currentStockData.parseClose();
+    }
+
+    public String getVolume() {
+        return currentStockData.parseVolume();
     }
 
     public String getOpen() {
@@ -379,10 +313,6 @@ public class StockSymbol {
 
     public String getFloatShorted() {
         return floatShorted;
-    }
-
-    public String getVolume() {
-        return volume;
     }
 
     public String getAverageVolume() {
