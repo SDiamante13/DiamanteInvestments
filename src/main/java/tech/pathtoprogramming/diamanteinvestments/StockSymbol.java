@@ -19,7 +19,15 @@ public class StockSymbol {
 
     public StockSymbol(String symbol) {
         try {
-            Document doc = Jsoup.connect("https://www.marketwatch.com/investing/stock/" + symbol).get();
+            Document doc = Jsoup.connect("https://www.marketwatch.com/investing/stock/" + symbol)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+                    .header("Accept-Language", "en-US,en;q=0.5")
+                    .header("Connection", "keep-alive")
+                    .header("Upgrade-Insecure-Requests", "1")
+                    .referrer("https://www.marketwatch.com")
+                    .timeout(10000)
+                    .get();
 
             String stockNameHtml = doc.select("h1.company__name").toString();
             String priceHtml = doc.select("div.intraday__data").toString();
