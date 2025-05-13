@@ -35,16 +35,16 @@ public class StockSymbol {
     private URL iconUrl;
 
 
-    public StockSymbol(String symbol) {
+    public StockSymbol(String symbol, String baseUrl, String alphaBaseUrl) {
         try {
             // Add browser-like headers to bypass bot protection
-            Document doc = Jsoup.connect("https://www.marketwatch.com/investing/stock/" + symbol)
+            Document doc = Jsoup.connect(baseUrl + "/investing/stock/" + symbol)
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
                 .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
                 .header("Accept-Language", "en-US,en;q=0.5")
                 .header("Connection", "keep-alive")
                 .header("Upgrade-Insecure-Requests", "1")
-                .referrer("https://www.marketwatch.com")
+                .referrer(baseUrl)
                 .timeout(10000)
                 .get();
 
@@ -250,7 +250,7 @@ public class StockSymbol {
             volume = line.substring(start + 1, deci + 4); // increased length to get the B, M, or K
 
 
-            callAlphaAdvantageAPIAndSet50DayAnd100DayMovingAverages(symbol);
+            callAlphaAdvantageAPIAndSet50DayAnd100DayMovingAverages(symbol, alphaBaseUrl);
 
             String urlIcon = "";
 
@@ -266,10 +266,10 @@ public class StockSymbol {
         }
     }
 
-    protected void callAlphaAdvantageAPIAndSet50DayAnd100DayMovingAverages(String symbol) throws IOException {
+    protected void callAlphaAdvantageAPIAndSet50DayAnd100DayMovingAverages(String symbol, String alphaBaseUrl) throws IOException {
         //-------------------------------------------------------------------------------------
         // Calculate 50 day and 100 day moving averages
-        String alphaUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY"
+        String alphaUrl = alphaBaseUrl + "/query?function=TIME_SERIES_DAILY"
                 + "&symbol=" + symbol
                 + "&apikey=NKNKJCBRLYI9H5SO&datatype=csv";
         URL alphaAdvantage = new URL(alphaUrl);

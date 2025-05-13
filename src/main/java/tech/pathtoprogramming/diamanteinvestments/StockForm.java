@@ -10,7 +10,6 @@ import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.data.general.DatasetUtilities;
 import org.jfree.data.xy.DefaultOHLCDataset;
 import org.jfree.data.xy.OHLCDataItem;
-import org.jfree.data.xy.OHLCDataset;
 import org.jfree.ui.RectangleEdge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,10 +18,6 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -472,7 +467,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
 
     // This method will call tech.pathtoprogramming.diamanteinvestments.StockSymbol and load values to the WatchList table
     public void retrieveStockStats(String stockS) {
-        StockSymbol tableSymbol = new StockSymbol(stockS);
+        StockSymbol tableSymbol = new StockSymbol(stockS, "https://www.marketwatch.com", "https://www.alphavantage.co");
         Object[] row = {symbolList.get(0), tableSymbol.getPrice(), tableSymbol.getChange(), tableSymbol.getChangePercent()};
         model.addRow(row);
         symbolList.remove(0);
@@ -485,7 +480,7 @@ public class StockForm extends JFrame implements ChartMouseListener {
     // This method will write any stock symbol's details to the Summary Pane
     public void writeData(String symbolMark) {
         try {
-            StockSymbol stockSearched = new StockSymbol(symbolMark);
+            StockSymbol stockSearched = new StockSymbol(symbolMark, "https://www.marketwatch.com", "https://www.alphavantage.co");
             if (stockSearched.getStockName().equals("not found")) { /* This will check if the symbol is valid */
                 JOptionPane.showMessageDialog(null, "Please enter a valid stock symbol to search.");
                 return;
